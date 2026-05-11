@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHORE · Pipeline Sprint 60 Días</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root{--ink:#0f0f0f;--ink2:#555;--ink3:#999;--paper:#fafaf8;--sf:#fff;--bd:#e8e6e0;--bd2:#d0cdc6;--g:#1a7f4b;--gL:#e8f5ee;--gM:#c8ecd8;--y:#b45309;--yL:#fef3cd;--yM:#fde68a;--r:#b91c1c;--rL:#fef2f2;--rM:#fecaca;--p:#6d28d9;--pL:#f5f3ff;--pM:#ddd6fe;--b:#1d4ed8;--bL:#eff6ff;--bM:#bfdbfe;--o:#c2410c;--oL:#fff7ed;--oM:#fed7aa;--rad:6px;--radL:10px;--radXL:16px;--sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shM:0 4px 12px rgba(0,0,0,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--paper);min-height:100vh}
+/* TOPBAR */
+.tb{background:var(--ink);height:50px;display:flex;align-items:center;padding:0 1.25rem;gap:1.5rem;position:sticky;top:0;z-index:100}
+.brand{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;letter-spacing:.12em;color:#fff;white-space:nowrap}
+.brand span{opacity:.4;margin-left:8px;font-weight:400;font-size:11px}
+.nav{display:flex;gap:2px;margin-left:auto}
+.nav button{padding:5px 10px;background:transparent;border:none;color:rgba(255,255,255,.5);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;border-radius:var(--rad);transition:.15s;white-space:nowrap}
+.nav button:hover{color:#fff;background:rgba(255,255,255,.08)}.nav button.active{color:#fff;background:rgba(255,255,255,.15)}
+.sync{display:flex;align-items:center;gap:5px;font-size:10px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;white-space:nowrap}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.3);transition:.3s}
+.dot.syncing{background:#fbbf24;animation:pulse 1s infinite}.dot.ok{background:#34d399}.dot.err{background:#f87171}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* LAYOUT */
+.ct{max-width:1280px;margin:0 auto;padding:1.25rem 1.5rem 3rem}
+.tab{display:none}.tab.active{display:block}
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:1rem;color:var(--ink3)}
+.spinner{width:28px;height:28px;border:2px solid var(--bd);border-top-color:var(--ink);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* CARDS */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1.25rem}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--radL);padding:.9rem 1rem;box-shadow:var(--sh)}
+.card .lbl{font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.card .val{font-size:22px;font-weight:600;line-height:1;color:var(--ink);font-family:'DM Mono',monospace}
+.card .sub{font-size:11px;color:var(--ink3);margin-top:4px}
+.card.good .val{color:var(--g)}.card.warn .val{color:var(--y)}.card.bad .val{color:var(--r)}
+/* PANEL */
+.panel{background:var(--sf);border:1px solid var(--bd);border-radius:var(--radL);padding:1.1rem;box-shadow:var(--sh);margin-bottom:1rem}
+.ptitle{font-size:11px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.85rem}
+.stitle{font-size:11px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin:1.5rem 0 .75rem}
+.stitle:first-child{margin-top:0}
+/* BARS */
+.br{margin-bottom:.85rem}.br:last-child{margin-bottom:0}
+.bl{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:5px}
+.bl strong{color:var(--ink);font-family:'DM Mono',monospace;font-size:11px}
+.btrack{height:6px;background:var(--paper);border-radius:3px;overflow:hidden;border:1px solid var(--bd)}
+.bfill{height:100%;border-radius:3px;transition:width .5s}
+/* FUNNEL */
+.funnel{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:1.25rem}
+.fc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--radL);padding:.75rem .4rem;text-align:center;cursor:pointer;transition:.15s;box-shadow:var(--sh)}
+.fc:hover{border-color:var(--bd2);transform:translateY(-1px);box-shadow:var(--shM)}
+.fc .code{font-size:10px;font-weight:600;color:var(--ink3);font-family:'DM Mono',monospace;margin-bottom:3px}
+.fc .num{font-size:24px;font-weight:600;line-height:1;font-family:'DM Mono',monospace}
+.fc .nm{font-size:10px;color:var(--ink3);line-height:1.3;margin-top:4px}
+/* ALERTS */
+.al{padding:9px 12px;border-radius:var(--rad);font-size:12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.al i{margin-top:1px;flex-shrink:0}
+.al.red{background:var(--rL);color:var(--r);border:1px solid var(--rM)}
+.al.yellow{background:var(--yL);color:var(--y);border:1px solid var(--yM)}
+.al.green{background:var(--gL);color:var(--g);border:1px solid var(--gM)}
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;font-family:'DM Mono',monospace;letter-spacing:.02em}
+.bv{background:var(--gL);color:var(--g);border:1px solid var(--gM)}.by{background:var(--yL);color:var(--y);border:1px solid var(--yM)}
+.br2{background:var(--rL);color:var(--r);border:1px solid var(--rM)}.bp{background:var(--pL);color:var(--p);border:1px solid var(--pM)}.bb{background:var(--bL);color:var(--b);border:1px solid var(--bM)}
+.e1{background:#f5f5f0;color:#888;border:1px solid #e5e5e0}.e2{background:var(--bL);color:var(--b);border:1px solid var(--bM)}.e3{background:var(--gL);color:var(--g);border:1px solid var(--gM)}.e4{background:var(--yL);color:var(--y);border:1px solid var(--yM)}.e5{background:var(--oL);color:var(--o);border:1px solid var(--oM)}.e6{background:var(--pL);color:var(--p);border:1px solid var(--pM)}.e7{background:var(--gL);color:var(--g);border:1px solid var(--gM);font-weight:700}.en{background:#f5f5f0;color:#888;border:1px solid #e5e5e0}
+.d0,.d2{background:var(--gL);color:var(--g);border:1px solid var(--gM)}.d4,.d7{background:var(--yL);color:var(--y);border:1px solid var(--yM)}.d10{background:var(--oL);color:var(--o);border:1px solid var(--oM)}.d14,.d21{background:var(--rL);color:var(--r);border:1px solid var(--rM)}.d30{background:#f5f5f0;color:#888;border:1px solid #e5e5e0}
+.si{background:var(--bL);color:var(--b);border:1px solid var(--bM)}.sd{background:var(--yL);color:var(--y);border:1px solid var(--yM)}.sp{background:var(--oL);color:var(--o);border:1px solid var(--oM)}.sa{background:var(--gL);color:var(--g);border:1px solid var(--gM)}
+/* TABLE */
+.tw{overflow-x:auto;border-radius:var(--radL);border:1px solid var(--bd);box-shadow:var(--sh)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{padding:8px 10px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);background:var(--paper);border-bottom:1px solid var(--bd);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--bd);transition:.1s}tbody tr:last-child{border-bottom:none}
+tbody td{padding:8px 10px;vertical-align:middle}tbody tr:hover{background:var(--paper)}
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+/* BTNS */
+.btn-add{width:100%;padding:10px;border:1px dashed var(--bd2);border-radius:var(--radL);background:transparent;color:var(--ink3);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;margin-top:.85rem;transition:.15s}
+.btn-add:hover{background:var(--sf);color:var(--ink);border-color:var(--ink3)}
+.bp2{padding:8px 16px;background:var(--ink);color:#fff;border:none;border-radius:var(--rad);font-size:12px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:5px}
+.bp2:hover{background:#333}.bp2:disabled{opacity:.5;cursor:not-allowed}
+.bs{padding:8px 14px;background:transparent;border:1px solid var(--bd2);border-radius:var(--rad);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;color:var(--ink2);transition:.15s}
+.bs:hover{background:var(--paper);color:var(--ink)}
+.bi{padding:4px 7px;background:transparent;border:1px solid var(--bd);border-radius:var(--rad);font-size:12px;cursor:pointer;color:var(--ink3);transition:.15s;line-height:1}
+.bi:hover{background:var(--paper);color:var(--ink)}.bi.gr:hover{color:var(--g);border-color:var(--gM)}
+/* FILTERS */
+.fbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:.85rem}
+.fbar select,.fbar input{padding:6px 9px;font-size:12px;font-family:'DM Sans',sans-serif;border:1px solid var(--bd2);border-radius:var(--rad);background:var(--sf);color:var(--ink);outline:none}
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.mo.open{display:flex}
+.mdl{background:var(--sf);border-radius:var(--radXL);border:1px solid var(--bd);padding:1.5rem;width:min(680px,96vw);max-height:92vh;overflow-y:auto;box-shadow:var(--shM)}
+.mdl h3{font-size:15px;font-weight:600;margin-bottom:1.25rem}
+.msec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);padding:10px 0 6px;border-top:1px solid var(--bd);margin-top:6px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fg1{grid-template-columns:1fr}.fg3{grid-template-columns:1fr 1fr 1fr}.fg4{grid-template-columns:1fr 1fr 1fr 1fr}
+label.fl{font-size:11px;font-weight:600;color:var(--ink2);display:block;margin-bottom:4px}
+.mdl input,.mdl select,.mdl textarea{width:100%;padding:7px 9px;font-size:12px;font-family:'DM Sans',sans-serif;border:1px solid var(--bd2);border-radius:var(--rad);background:var(--sf);color:var(--ink);outline:none;transition:.15s}
+.mdl input:focus,.mdl select:focus,.mdl textarea:focus{border-color:var(--ink)}
+.mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--bd)}
+.ckrow{display:flex;align-items:center;gap:8px;padding:5px 0}
+.ckrow input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--g);flex-shrink:0}
+.ckrow label{font-size:12px;cursor:pointer;color:var(--ink2)}
+/* RATING */
+.rrow{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.rbtn{padding:5px 10px;font-size:11px;font-family:'DM Mono',monospace;border:1px solid var(--bd2);border-radius:var(--rad);cursor:pointer;background:var(--sf);color:var(--ink2);transition:.15s;font-weight:500}
+.rbtn.a1{background:var(--rL);color:var(--r);border-color:var(--rM)}.rbtn.a2{background:var(--yL);color:var(--y);border-color:var(--yM)}.rbtn.a3{background:var(--oL);color:var(--o);border-color:var(--oM)}.rbtn.a4{background:var(--bL);color:var(--b);border-color:var(--bM)}.rbtn.a5{background:var(--gL);color:var(--g);border-color:var(--gM)}
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+.ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.litem{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)}
+/* JUNTA */
+.jb{background:var(--sf);border:1px solid var(--bd);border-radius:var(--radL);padding:1.1rem;box-shadow:var(--sh)}
+.jbt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem;padding-left:10px;border-left:3px solid}
+.jb1c{border-color:var(--b)!important;color:var(--b)}.jb2c{border-color:var(--g)!important;color:var(--g)}.jb3c{border-color:var(--y)!important;color:var(--y)}.jb4c{border-color:var(--r)!important;color:var(--r)}
+.jb .body{font-size:12px;color:var(--ink2);line-height:1.9}
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:#fff;padding:10px 16px;border-radius:var(--radL);font-size:12px;font-weight:500;z-index:300;transform:translateY(60px);opacity:0;transition:.25s;box-shadow:var(--shM);display:flex;align-items:center;gap:8px}
+.toast.show{transform:translateY(0);opacity:1}.toast.err{background:var(--r)}
+/* WEEK */
+.wf{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:.85rem}
+.wf label.fl{display:block;margin-bottom:4px}
+.wf input,.wf select{width:100%;padding:7px 9px;font-size:12px;font-family:'DM Sans',sans-serif;border:1px solid var(--bd2);border-radius:var(--rad);background:var(--sf);color:var(--ink);outline:none}
+/* SYS ITEMS */
+.si2{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--radL);margin-bottom:6px}
+/* POST-CITA CARDS */
+.pcc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--radL);padding:1.1rem;box-shadow:var(--sh);margin-bottom:.85rem}
+.pch{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.85rem;padding-bottom:.75rem;border-bottom:1px solid var(--bd)}
+.pcgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pcf .pclbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:4px}
+.pcf .pcval{font-size:12px;color:var(--ink2);line-height:1.5}
+.pcf.full{grid-column:1/-1}
+.star{font-size:13px}.star.on{color:#f59e0b}.star.off{color:#e5e7eb}
+/* SEGMENTACION */
+.seg-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--radL);padding:1rem;box-shadow:var(--sh);cursor:pointer;transition:.15s;position:relative}
+.seg-card:hover{border-color:var(--bd2);box-shadow:var(--shM)}
+.seg-card.selected{border-width:2px}
+.seg-card .sc-cubo{font-size:13px;font-weight:600;margin-bottom:4px}
+.seg-card .sc-def{font-size:11px;color:var(--ink2);line-height:1.5;margin-bottom:8px}
+.seg-card .sc-cnt{font-size:22px;font-weight:700;font-family:'DM Mono',monospace}
+.seg-card .sc-tick{font-size:11px;color:var(--ink3)}
+.seg-criteria{background:var(--paper);border-radius:var(--rad);padding:10px 12px;margin-top:8px;font-size:11px;color:var(--ink2);line-height:1.6;display:none}
+.seg-card.selected .seg-criteria{display:block}
+/* COMPANY ROWS in segmentacion */
+.comp-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--bd);font-size:12px}
+.comp-row:last-child{border-bottom:none}
+.comp-row:hover{background:var(--paper)}
+.comp-name{flex:1;font-weight:500}
+.comp-sector{font-size:11px;color:var(--ink3)}
+/* RESPONSIVE */
+@media(max-width:700px){.funnel{grid-template-columns:repeat(4,1fr)}.g2,.g3,.fg,.fg3,.fg4{grid-template-columns:1fr}.nav button span{display:none}}
+</style>
+</head>
+<body>
+
+<div class="tb">
+  <div class="brand">SHORE <span>SPRINT 60 DÍAS</span></div>
+  <nav class="nav">
+    <button class="active" onclick="sw('dashboard',this)"><i class="ti ti-layout-dashboard"></i> <span>General</span></button>
+    <button onclick="sw('segmentacion',this)"><i class="ti ti-sitemap"></i> <span>Segmentación</span></button>
+    <button onclick="sw('pipeline',this)"><i class="ti ti-list"></i> <span>Pipeline</span></button>
+    <button onclick="sw('seguimiento',this)"><i class="ti ti-clock"></i> <span>Cadencia</span></button>
+    <button onclick="sw('postcita',this)"><i class="ti ti-clipboard-text"></i> <span>Post-cita</span></button>
+    <button onclick="sw('metricas',this)"><i class="ti ti-chart-bar"></i> <span>Métricas</span></button>
+    <button onclick="sw('junta',this)"><i class="ti ti-users"></i> <span>Junta</span></button>
+  </nav>
+  <div class="sync"><div class="dot" id="sdot"></div><span id="slbl">conectando…</span></div>
+</div>
+
+<div class="ct">
+
+<!-- DASHBOARD -->
+<div id="tab-dashboard" class="tab active">
+  <div id="dl" class="loading"><div class="spinner"></div><span>Cargando datos del equipo…</span></div>
+  <div id="dc" style="display:none">
+    <p class="stitle">Objetivo financiero — $1,000,000 MXN</p>
+    <div class="cards" id="ctop"></div>
+    <div class="panel"><div class="ptitle">Progreso hacia la meta</div><div id="pbars"></div></div>
+    <p class="stitle">Funnel — cuentas por etapa <small style="font-weight:400;text-transform:none;letter-spacing:0">(clic para filtrar)</small></p>
+    <div class="funnel" id="funnelbox"></div>
+    <p class="stitle">SHORE Systems — pipeline Q3 para Marqui <small style="font-weight:400;text-transform:none;letter-spacing:0">(meta: 2–3 en negociación avanzada)</small></p>
+    <div id="sysq3" style="margin-bottom:1rem"></div>
+    <div class="g2">
+      <div><p class="stitle">Alertas activas</p><div id="alertsbox"></div></div>
+      <div><p class="stitle">Distribución por cubo</p>
+        <div class="panel" style="padding:.85rem">
+          <div style="position:relative;height:185px"><canvas id="chartCubo" role="img" aria-label="Distribución por cubo"></canvas></div>
+          <div class="legend" id="legCubo"></div>
+        </div>
+      </div>
+    </div>
+    <p class="stitle">Introducciones de Marqui</p>
+    <div id="marquisum"></div>
+  </div>
+</div>
+
+<!-- SEGMENTACIÓN -->
+<div id="tab-segmentacion" class="tab">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:1rem">
+    <div>
+      <p class="stitle" style="margin:0">Segmentación de cartera — paso previo a cualquier contacto</p>
+      <p style="font-size:11px;color:var(--ink3);margin-top:3px">Clasifica cada empresa en su cubo antes de registrar actividad. Karmina entrega segmentación completa el viernes 16 de mayo.</p>
+    </div>
+    <button class="bp2" onclick="openSegModal()"><i class="ti ti-plus"></i> Agregar empresa</button>
+  </div>
+
+  <p class="stitle">Los 5 cubos — criterios de clasificación</p>
+  <div class="g3" style="grid-template-columns:repeat(5,1fr);margin-bottom:1.5rem" id="cuboCards"></div>
+
+  <div class="fbar">
+    <select id="sf-cubo" onchange="renderSeg()"><option value="">Todos los cubos</option><option value="Verde">🟢 Verde</option><option value="Amarillo">🟡 Amarillo</option><option value="Rojo">🔴 Rojo</option><option value="D">🟣 D</option><option value="Nuevos">🔵 Nuevos</option></select>
+    <select id="sf-sector" onchange="renderSeg()"><option value="">Todos los sectores</option><option>CPG</option><option>Financiero</option><option>Educación</option><option>Salud</option><option>Industrial</option><option>Automotriz</option><option>Retail</option><option>Tecnología</option><option>Eventos</option><option>Otro</option></select>
+    <select id="sf-estado" onchange="renderSeg()"><option value="">Todos los estados</option><option value="sin_tocar">Sin tocar</option><option value="en_pipeline">En pipeline</option></select>
+    <input id="sf-buscar" placeholder="Buscar empresa…" oninput="renderSeg()" style="min-width:180px">
+  </div>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Empresa</th><th>Decisor identificado</th><th>Cubo</th><th>Sector</th><th>Salud sectorial</th><th>Relación con Shore</th><th>Ajuste a System</th><th>Estado</th><th>Notas de segmentación</th><th style="width:80px"></th></tr></thead>
+      <tbody id="seg-body"></tbody>
+    </table>
+  </div>
+  <button class="btn-add" onclick="openSegModal()"><i class="ti ti-plus"></i> Agregar empresa a segmentar</button>
+</div>
+
+<!-- PIPELINE -->
+<div id="tab-pipeline" class="tab">
+  <div class="fbar">
+    <select id="f-cubo" onchange="renderPipeline()"><option value="">Todos los cubos</option><option value="Verde">🟢 Verde</option><option value="Amarillo">🟡 Amarillo</option><option value="Rojo">🔴 Rojo</option><option value="D">🟣 D</option><option value="Nuevos">🔵 Nuevos</option></select>
+    <select id="f-etapa" onchange="renderPipeline()"><option value="">Todas las etapas</option><option value="E1">E1</option><option value="E2">E2</option><option value="E3">E3</option><option value="E4">E4</option><option value="E5">E5</option><option value="E6">E6</option><option value="E7">E7</option><option value="Nurture">Nurture</option></select>
+    <select id="f-resp" onchange="renderPipeline()"><option value="">Todos los resp.</option><option>Adrián</option><option>Diego</option><option>Karmina</option><option>Marqui</option></select>
+    <select id="f-tipo" onchange="renderPipeline()"><option value="">Todos los tipos</option><option>Sub Product</option><option>Story</option><option>Stream</option><option>System</option></select>
+    <select id="f-alrt" onchange="renderPipeline()"><option value="">Sin filtro alerta</option><option value="1">Solo con alerta</option></select>
+    <button class="bp2" onclick="openAccModal()" style="margin-left:auto"><i class="ti ti-plus"></i> Agregar cuenta</button>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Cliente / Empresa</th><th>Cubo</th><th>Etapa</th><th>Ticket proyecto</th><th>Potencial System/año</th><th>Tipo</th><th>Días sin contacto</th><th>Cot. sol. en cita</th><th>SLA &lt;12h</th><th>Avance System</th><th>Resp.</th><th>Alerta</th><th style="width:70px"></th></tr></thead>
+      <tbody id="pipeline-body"></tbody>
+    </table>
+  </div>
+  <button class="btn-add" onclick="openAccModal()"><i class="ti ti-plus"></i> Agregar cuenta al pipeline</button>
+</div>
+
+<!-- CADENCIA -->
+<div id="tab-seguimiento" class="tab">
+  <p class="stitle">Cotizaciones en cadencia activa</p>
+  <div class="tw" style="margin-bottom:1.5rem">
+    <table><thead><tr><th>Cliente / Empresa</th><th>Cot. enviada</th><th>Días</th><th>Acción pendiente</th><th>Qué decir</th><th>SLA &lt;12h</th><th>Resp.</th></tr></thead><tbody id="cad-body"></tbody></table>
+  </div>
+  <p class="stitle">Referencia de cadencia</p>
+  <div class="tw">
+    <table><thead><tr><th>Momento</th><th>Acción</th><th>Quién</th><th>Mensaje rector</th><th>Regla</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge d0">Día 0</span></td><td>WhatsApp / llamada 60 seg</td><td>Diego o Adrián</td><td>"Acabo de mandarte la cotización. Te aviso para que la veas hoy."</td><td>Sin esto, 30% no se abre en 5 días</td></tr>
+      <tr><td><span class="badge d2">Día 2</span></td><td>WhatsApp</td><td>Mismo</td><td>"¿Pudiste revisarla? ¿Resuelvo algo?"</td><td>Breve, sin presión</td></tr>
+      <tr><td><span class="badge d4">Día 4</span></td><td>Llamada 10 min</td><td>Mismo</td><td>"¿Qué te pareció? Reacciones honestas."</td><td>Escuchar objeciones</td></tr>
+      <tr><td><span class="badge d7">Día 7</span></td><td>Email caso de estudio</td><td>Adrián</td><td>Prueba social del sector (Calidra u otro)</td><td>Erick prepara plantilla</td></tr>
+      <tr><td><span class="badge d10">Día 10</span></td><td>Llamada con apertura</td><td>Adrián</td><td>"¿Qué tendría que ajustar para que avance?"</td><td>Oferta ajuste de scope</td></tr>
+      <tr><td><span class="badge d14">Día 14</span></td><td>Conversación honesta</td><td>Adrián</td><td>"¿Avanza, no avanza, o es timing?"</td><td>🔴 OBLIGATORIA si no hay avance</td></tr>
+      <tr><td><span class="badge d21">Día 21</span></td><td>Última oportunidad</td><td>Adrián</td><td>Cierre o fecha específica de siguiente paso</td><td>Sin fecha = sale del pipeline</td></tr>
+      <tr><td><span class="badge d30">Día 30+</span></td><td>Pasa a nurture mensual</td><td>Karmina</td><td>Mantenimiento, sin presión activa</td><td>🔴 Sale del pipeline activo</td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- POST-CITA -->
+<div id="tab-postcita" class="tab">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:.85rem">
+    <div><p class="stitle" style="margin:0">Plantilla post-cita — capturar en máx. 24 horas</p><p style="font-size:11px;color:var(--ink3);margin-top:3px">Cada cita es un mini focus group. Alimenta el ajuste de mensaje en la junta del lunes.</p></div>
+    <button class="bp2" onclick="openPcModal()"><i class="ti ti-plus"></i> Nueva captura</button>
+  </div>
+  <div id="pc-list"></div>
+  <div id="pc-empty" style="display:none;text-align:center;padding:3rem;color:var(--ink3)"><i class="ti ti-clipboard-text" style="font-size:32px;display:block;margin-bottom:.75rem;opacity:.3"></i>Sin capturas post-cita aún.</div>
+  <p class="stitle" style="margin-top:2rem">Patrones acumulados del relanzamiento</p>
+  <div class="g2">
+    <div class="panel"><div class="ptitle">¿"Sistemas de contenido. Resultados de negocio." conectó?</div><div style="position:relative;height:160px"><canvas id="chartMsg" role="img" aria-label="Rating mensaje"></canvas></div><div class="legend" id="legMsg"></div></div>
+    <div class="panel"><div class="ptitle">Objeciones más frecuentes</div><div id="objsum"></div></div>
+  </div>
+  <div class="g2">
+    <div class="panel"><div class="ptitle">Comprensión del catálogo (% claridad promedio)</div><div style="position:relative;height:200px"><canvas id="chartCat" role="img" aria-label="Comprensión catálogo"></canvas></div></div>
+    <div class="panel"><div class="ptitle">Respuesta al relanzamiento por tipo de cliente</div><div id="sectsum"></div></div>
+  </div>
+</div>
+
+<!-- MÉTRICAS -->
+<div id="tab-metricas" class="tab">
+  <p class="stitle">KPIs del sprint — acumulado</p>
+  <div class="cards" id="ckpi"></div>
+  <div class="g2">
+    <div class="panel"><div class="ptitle">Tasas de conversión — recurrentes <span style="font-weight:400;opacity:.6">(bench. 25–35%)</span></div><div id="convRec"></div></div>
+    <div class="panel"><div class="ptitle">Tasas de conversión — nuevos <span style="font-weight:400;opacity:.6">(bench. 15–25%)</span></div><div id="convNew"></div></div>
+  </div>
+  <p class="stitle">Actividad semanal acumulada</p>
+  <div class="panel"><div style="position:relative;height:240px"><canvas id="chartSem" role="img" aria-label="Actividad semanal"></canvas></div><div class="legend" id="legSem"></div></div>
+  <p class="stitle">Facturación cerrada vs meta $1M</p>
+  <div class="panel"><div style="position:relative;height:200px"><canvas id="chartProy" role="img" aria-label="Proyección vs meta"></canvas></div><div class="legend" id="legProy"></div></div>
+  <p class="stitle">Registrar actividad semanal</p>
+  <div class="panel">
+    <div class="wf">
+      <div><label class="fl">Semana</label><select id="wksel" onchange="loadWk()"><option value="w1">Sem 1 · 12–18 may</option><option value="w2">Sem 2 · 19–25 may</option><option value="w3">Sem 3 · 26 may–1 jun</option><option value="w4">Sem 4 · 2–8 jun</option><option value="w5">Sem 5 · 9–15 jun</option><option value="w6">Sem 6 · 16–22 jun</option><option value="w7">Sem 7 · 23–29 jun</option><option value="w8">Sem 8 · 30 jun–6 jul</option></select></div>
+      <div><label class="fl">Cuentas tocadas</label><input id="wkt" type="number" placeholder="0" min="0"></div>
+      <div><label class="fl">Citas realizadas</label><input id="wkc" type="number" placeholder="0" min="0"></div>
+      <div><label class="fl">Cotizaciones enviadas</label><input id="wkq" type="number" placeholder="0" min="0"></div>
+      <div><label class="fl">Proyectos cerrados</label><input id="wkz" type="number" placeholder="0" min="0"></div>
+      <div><label class="fl">Monto cerrado ($MXN)</label><input id="wkm" type="number" placeholder="0" min="0"></div>
+    </div>
+    <button class="bp2" onclick="saveWk()"><i class="ti ti-device-floppy"></i> Guardar semana</button>
+  </div>
+</div>
+
+<!-- JUNTA -->
+<div id="tab-junta" class="tab">
+  <p class="stitle">Junta lunes 9:00 AM · 60 min · Adrián, Diego, Karmina, Marqui (desde 18 may)</p>
+  <div class="g2" style="margin-bottom:1rem">
+    <div class="jb"><div class="jbt jb1c">Bloque 1 · 0–15 min · Lectura del pipeline</div><div class="body" id="jb1"></div></div>
+    <div class="jb"><div class="jbt jb2c">Bloque 2 · 15–30 min · Patrones de la semana</div><div class="body" id="jb2"></div></div>
+    <div class="jb"><div class="jbt jb3c">Bloque 3 · 30–45 min · Plan de la semana</div><div class="body" id="jb3"></div></div>
+    <div class="jb"><div class="jbt jb4c">Bloque 4 · 45–60 min · Bloqueos y decisiones</div><div class="body" id="jb4"></div></div>
+  </div>
+  <p class="stitle">Cuentas que requieren acción inmediata</p>
+  <div class="tw" style="margin-bottom:1.25rem"><table><thead><tr><th>Cliente / Empresa</th><th>Etapa</th><th>Cubo</th><th>Alerta</th><th>Próxima acción</th><th>Resp.</th></tr></thead><tbody id="jurg"></tbody></table></div>
+  <p class="stitle">Proyección de cierres esta semana (E5 y E6)</p>
+  <div class="tw" style="margin-bottom:1.25rem"><table><thead><tr><th>Cliente / Empresa</th><th>Ticket proyecto</th><th>Potencial System</th><th>Tipo</th><th>Etapa</th><th>Avance System</th><th>Resp.</th><th>Prob.</th></tr></thead><tbody id="jcierres"></tbody></table></div>
+  <p class="stitle">Introducciones de Marqui — estado</p>
+  <div id="jmarqui"></div>
+</div>
+
+</div><!-- /ct -->
+
+<!-- MODAL SEGMENTACIÓN -->
+<div class="mo" id="mo-seg">
+  <div class="mdl">
+    <h3 id="seg-modal-title">Agregar empresa a segmentar</h3>
+    <div class="fg fg3">
+      <div><label class="fl">Empresa</label><input id="sg-empresa" placeholder="Nombre de la empresa"></div>
+      <div><label class="fl">Decisor identificado</label><input id="sg-decisor" placeholder="Nombre y cargo"></div>
+      <div><label class="fl">Sector</label><select id="sg-sector"><option value="">Seleccionar</option><option>CPG</option><option>Financiero</option><option>Educación</option><option>Salud</option><option>Industrial</option><option>Automotriz</option><option>Retail</option><option>Tecnología</option><option>Eventos</option><option>Otro</option></select></div>
+    </div>
+    <div class="msec" style="border-top:none;padding-top:0;margin-top:0">Clasificación en cubo</div>
+    <div class="fg">
+      <div><label class="fl">Cubo asignado</label><select id="sg-cubo"><option value="Verde">🟢 Verde — Recurrente caliente sector saludable</option><option value="Amarillo">🟡 Amarillo — Recurrente sector estable</option><option value="Rojo">🔴 Rojo — Recurrente sector contraído</option><option value="D">🟣 D — Cotizaron pero no cerraron</option><option value="Nuevos">🔵 Nuevos — Cuenta nueva calificada</option></select></div>
+      <div><label class="fl">Salud sectorial</label><select id="sg-salud"><option value="">Evaluar</option><option value="saludable">Saludable — comprando / creciendo</option><option value="estable">Estable — proyectos puntuales</option><option value="contraido">Contraído — presupuesto congelado</option></select></div>
+    </div>
+    <div class="fg">
+      <div><label class="fl">Estado de relación con Shore</label><select id="sg-relacion"><option value="">Evaluar</option><option value="caliente">Caliente — proyecto reciente &lt;6m</option><option value="viva">Viva — contacto en último año</option><option value="dormida">Dormida — más de 12 meses</option><option value="nueva">Nueva — nunca ha trabajado con Shore</option><option value="cotizo">Cotizó pero no cerró</option></select></div>
+      <div><label class="fl">Ajuste a SHORE System</label><select id="sg-ajuste"><option value="">Evaluar</option><option value="alto">Alto — tiene budget anual + objetivos claros</option><option value="medio">Medio — potencial pero requiere madurar</option><option value="bajo">Bajo — compra puntual por estructura</option></select></div>
+    </div>
+    <div class="msec">Criterios adicionales de calificación</div>
+    <div class="fg fg4">
+      <div><div class="ckrow"><input type="checkbox" id="sg-ck1"><label for="sg-ck1">Budget anual de marketing identificado</label></div></div>
+      <div><div class="ckrow"><input type="checkbox" id="sg-ck2"><label for="sg-ck2">Decisor con autoridad de bloquear presupuesto</label></div></div>
+      <div><div class="ckrow"><input type="checkbox" id="sg-ck3"><label for="sg-ck3">Objetivos de negocio 2026 claros</label></div></div>
+      <div><div class="ckrow"><input type="checkbox" id="sg-ck4"><label for="sg-ck4">Evalúa rendimiento del contenido</label></div></div>
+    </div>
+    <div class="fg">
+      <div><label class="fl">Ticket potencial estimado ($MXN)</label><input id="sg-ticket" type="number" placeholder="300000"></div>
+      <div><label class="fl">Semana de inicio de contacto</label><select id="sg-semana"><option value="sem2">Semana 2 (19–25 may)</option><option value="sem3">Semana 3 (26 may–1 jun)</option><option value="sem4">Semana 4 (2–8 jun)</option><option value="sem5">Semana 5+</option></select></div>
+    </div>
+    <div class="fg" style="grid-template-columns:1fr"><div><label class="fl">Notas de segmentación</label><textarea id="sg-notas" rows="2" placeholder="Contexto relevante: proyectos previos, fricciones conocidas, contactos internos…"></textarea></div></div>
+    <div class="mfoot"><button class="bs" onclick="closeSegModal()">Cancelar</button><button class="bp2" id="btn-seg-save" onclick="saveSeg()"><i class="ti ti-device-floppy"></i> Guardar</button></div>
+  </div>
+</div>
+
+<!-- MODAL CUENTA PIPELINE -->
+<div class="mo" id="mo-acc">
+  <div class="mdl">
+    <h3 id="acc-title">Agregar cuenta al pipeline</h3>
+    <div class="msec" style="border-top:none;padding-top:0;margin-top:0">Datos generales</div>
+    <div class="fg"><div><label class="fl">Nombre del decisor</label><input id="a-nombre" placeholder="Nombre completo"></div><div><label class="fl">Empresa</label><input id="a-empresa" placeholder="Empresa"></div></div>
+    <div class="fg fg3">
+      <div><label class="fl">Cubo</label><select id="a-cubo"><option value="Verde">🟢 Verde</option><option value="Amarillo">🟡 Amarillo</option><option value="Rojo">🔴 Rojo</option><option value="D">🟣 D</option><option value="Nuevos">🔵 Nuevos</option></select></div>
+      <div><label class="fl">Etapa</label><select id="a-etapa"><option value="E1">E1 — Segmentada</option><option value="E2">E2 — Touchpoint</option><option value="E3">E3 — Cita agendada</option><option value="E4">E4 — Cita realizada</option><option value="E5">E5 — Cot. solicitada</option><option value="E6">E6 — Cot. entregada</option><option value="E7">E7 — Cerrado</option><option value="Nurture">Nurture</option></select></div>
+      <div><label class="fl">Tipo</label><select id="a-tipo"><option>Sub Product</option><option>Story</option><option>Stream</option><option>System</option></select></div>
+    </div>
+    <div class="fg"><div><label class="fl">Sector</label><input id="a-sector" placeholder="CPG, Educación…"></div><div><label class="fl">Responsable</label><select id="a-resp"><option>Adrián</option><option>Diego</option><option>Karmina</option><option>Marqui</option></select></div></div>
+    <div class="msec">Tickets</div>
+    <div class="fg"><div><label class="fl">Ticket proyecto ($MXN)</label><input id="a-ticket" type="number" placeholder="150000"></div><div><label class="fl">Potencial System anual ($MXN)</label><input id="a-ticksys" type="number" placeholder="1500000"></div></div>
+    <div class="msec">Seguimiento</div>
+    <div class="fg"><div><label class="fl">Último contacto</label><input id="a-fecha" type="date"></div><div><label class="fl">Próxima acción</label><input id="a-accion" placeholder="Ej: Llamada día 4"></div></div>
+    <div class="fg"><div><label class="fl">Fecha cotización enviada</label><input id="a-cotf" type="date"></div><div><label class="fl">Avance en conversación System</label><select id="a-sysav"><option value="">No aplica / no iniciado</option><option value="inicial">Inicial — mencionado en cita</option><option value="diagnostico">Diagnóstico — en proceso</option><option value="propuesta">Propuesta — mix anual enviado</option><option value="avanzado">Avanzado — presupuesto en discusión ⭐</option></select></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="ckrow"><input type="checkbox" id="a-cotsol"><label for="a-cotsol"><strong>Cot. solicitada en cita</strong></label></div>
+      <div class="ckrow"><input type="checkbox" id="a-slaok"><label for="a-slaok"><strong>SLA &lt;12h cumplido</strong></label></div>
+      <div class="ckrow"><input type="checkbox" id="a-marq"><label for="a-marq"><strong>Intro de Marqui</strong></label></div>
+    </div>
+    <div class="fg" style="grid-template-columns:1fr"><div><label class="fl">Notas</label><textarea id="a-notas" rows="2" placeholder="Contexto adicional…"></textarea></div></div>
+    <div class="mfoot"><button class="bs" onclick="closeAccModal()">Cancelar</button><button class="bp2" id="btn-acc-save" onclick="saveAcc()"><i class="ti ti-device-floppy"></i> Guardar</button></div>
+  </div>
+</div>
+
+<!-- MODAL POST-CITA -->
+<div class="mo" id="mo-pc">
+  <div class="mdl">
+    <h3>Captura post-cita</h3>
+    <div class="msec" style="border-top:none;padding-top:0;margin-top:0">¿Cuál fue la cita?</div>
+    <div class="fg fg3"><div><label class="fl">Empresa / cliente</label><input id="pc-emp" placeholder="Empresa"></div><div><label class="fl">Decisor presente</label><input id="pc-dec" placeholder="Nombre y cargo"></div><div><label class="fl">Fecha de la cita</label><input id="pc-fec" type="date"></div></div>
+    <div class="fg"><div><label class="fl">Presentó</label><select id="pc-pre"><option>Adrián</option><option>Diego</option><option>Adrián + Diego</option><option>Adrián + Marqui</option></select></div><div><label class="fl">Tipo de cliente</label><select id="pc-tip"><option value="Verde">🟢 Recurrente caliente</option><option value="Amarillo">🟡 Recurrente estable</option><option value="D">🟣 Pipeline anterior</option><option value="Nuevos">🔵 Nuevo</option></select></div></div>
+    <div class="msec">Estado del negocio del cliente</div>
+    <div class="fg" style="grid-template-columns:1fr"><div><label class="fl">¿Cómo describió su situación actual? (en sus propias palabras)</label><textarea id="pc-sit" rows="2" placeholder="Ej: 'Estamos apretados en presupuesto pero necesitamos mantener presencia de marca…'"></textarea></div></div>
+    <div class="fg"><div><label class="fl">Objetivos 2026 mencionados</label><textarea id="pc-obj" rows="2" placeholder="Ej: lanzar nueva línea, posicionar director, sostener presencia Q3…"></textarea></div><div><label class="fl">Proyectos de contenido en mente (próximos 6 meses)</label><textarea id="pc-proy" rows="2" placeholder="Ej: video corporativo para consejo, campaña Q4, podcast del CEO…"></textarea></div></div>
+    <div class="msec">Operación actual de contenido</div>
+    <div class="fg" style="grid-template-columns:1fr"><div><label class="fl">¿Cómo opera hoy su contenido? (proveedores, fricciones, presupuesto aproximado)</label><textarea id="pc-op" rows="2" placeholder="Ej: agencia externa + freelancer, ~$500K anuales, sin reporte de resultados…"></textarea></div></div>
+    <div class="fg" style="grid-template-columns:1fr"><div><label class="fl">¿Cómo miden si el contenido rinde? ¿Cómo justifican la inversión internamente?</label><textarea id="pc-med" rows="2" placeholder="Ej: 'No lo miden formalmente', 'por número de leads', 'por criterio del director'…"></textarea></div></div>
+    <div class="fg" style="grid-template-columns:1fr"><div><label class="fl" style="color:var(--g)">⭐ Si pudieran cambiar algo de su modelo actual con proveedores, ¿qué sería? <span style="font-weight:400;font-size:10px">(ORO — esta respuesta es exactamente lo que Shore vende)</span></label><textarea id="pc-cam" rows="2" placeholder="Adaptar la presentación a esta respuesta directamente…"></textarea></div></div>
+    <div class="msec">Reacción al relanzamiento</div>
+    <div class="fg" style="grid-template-columns:1fr"><div><label class="fl">¿El mensaje "Sistemas de contenido. Resultados de negocio." conectó?</label><div class="rrow" id="rating-msg"><button class="rbtn" data-v="1" onclick="setR(1)">1 Nada</button><button class="rbtn" data-v="2" onclick="setR(2)">2 Poco</button><button class="rbtn" data-v="3" onclick="setR(3)">3 Regular</button><button class="rbtn" data-v="4" onclick="setR(4)">4 Bien</button><button class="rbtn" data-v="5" onclick="setR(5)">5 Muy bien</button></div></div></div>
+    <div class="fg"><div><label class="fl">¿Qué partes del catálogo resonaron más?</label><textarea id="pc-res" rows="2" placeholder="Ej: 'Le llamó mucho la atención la cotización en 12h', 'quiso saber más de System'…"></textarea></div><div><label class="fl">¿Qué partes confundieron o generaron escepticismo?</label><textarea id="pc-conf" rows="2" placeholder="Ej: 'No entendió la diferencia Story/Stream', 'no creyó el SLA'…"></textarea></div></div>
+    <div class="fg" style="grid-template-columns:1fr"><div><label class="fl">Objeciones que aparecieron</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:5px" id="obj-checks">
+        <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer"><input type="checkbox" value="info_correo"> Mándame info por correo</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer"><input type="checkbox" value="ya_tenemos"> Ya tenemos proveedor</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer"><input type="checkbox" value="mal_momento"> No es buen momento</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer"><input type="checkbox" value="precio"> ¿Cuánto cuesta?</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer"><input type="checkbox" value="presupuesto"> Presupuesto congelado</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer"><input type="checkbox" value="tamano"> ¿Qué tamaño de proyectos?</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer"><input type="checkbox" value="comite"> Necesito consultarlo con el comité</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer"><input type="checkbox" value="otra"> Otra (describir en notas)</label>
+      </div>
+    </div></div>
+    <div class="msec">Comprensión del catálogo</div>
+    <div class="fg fg4">
+      <div><label class="fl">SHORE System</label><select id="pc-es"><option value="">—</option><option value="claro">Muy claro</option><option value="regular">Regular</option><option value="confuso">Confuso</option><option value="np">No presentado</option></select></div>
+      <div><label class="fl">Story / Stream</label><select id="pc-est"><option value="">—</option><option value="claro">Muy claro</option><option value="regular">Regular</option><option value="confuso">Confuso</option><option value="np">No presentado</option></select></div>
+      <div><label class="fl">Sub Products</label><select id="pc-esb"><option value="">—</option><option value="claro">Muy claro</option><option value="regular">Regular</option><option value="confuso">Confuso</option><option value="np">No presentado</option></select></div>
+      <div><label class="fl">Reporting resultados</label><select id="pc-er"><option value="">—</option><option value="claro">Muy claro</option><option value="regular">Regular</option><option value="confuso">Confuso</option><option value="np">No presentado</option></select></div>
+    </div>
+    <div class="msec">Resultado de la cita</div>
+    <div class="ckrow" style="margin-bottom:8px"><input type="checkbox" id="pc-cs"><label for="pc-cs"><strong>Cotización solicitada en cita</strong> — el cliente la pidió explícitamente</label></div>
+    <div class="fg"><div><label class="fl">Próximo paso acordado</label><input id="pc-pp" placeholder="Ej: Cotización para el 23 mayo, llamada de seguimiento viernes 26"></div><div><label class="fl">Notas adicionales</label><input id="pc-not" placeholder="Cualquier observación relevante para el equipo…"></div></div>
+    <div class="mfoot"><button class="bs" onclick="closePcModal()">Cancelar</button><button class="bp2" id="btn-pc-save" onclick="savePc()"><i class="ti ti-device-floppy"></i> Guardar captura</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const API='https://script.google.com/macros/s/AKfycbzUwzioh_2AKlhFAIfgwaYNUzyrv-i1CO84zye86rBJGH1ZXnj8ODaaJuAZam1KGm8diw/exec';
+const META=1000000,MI=650000,MM=350000;
+const SS=new Date('2026-05-12');
+
+// COLS
+const AC=['id','nombre','empresa','cubo','etapa','tipo','ticket','tickSys','resp','fecha','accion','cotF','sector','notas','slaOk','cotSol','sysAv','marq'];
+const WC=['key','t','c','q','z','m'];
+const PC=['id','emp','dec','fec','pre','tip','sit','obj','proy','op','med','cam','rat','res','conf','obj2','es','est','esb','er','cs','pp','not'];
+const SC=['id','empresa','decisor','sector','cubo','salud','relacion','ajuste','ck1','ck2','ck3','ck4','ticket','semana','notas','estado'];
+
+let accs=[],segs=[],pcs=[],editAccId=null,editSegId=null,pcR=0,activeTab='dashboard';
+let wk={w1:{t:0,c:0,q:0,z:0,m:0},w2:{t:0,c:0,q:0,z:0,m:0},w3:{t:0,c:0,q:0,z:0,m:0},w4:{t:0,c:0,q:0,z:0,m:0},w5:{t:0,c:0,q:0,z:0,m:0},w6:{t:0,c:0,q:0,z:0,m:0},w7:{t:0,c:0,q:0,z:0,m:0},w8:{t:0,c:0,q:0,z:0,m:0}};
+let chartCubo=null,chartSem=null,chartProy=null,chartMsg=null,chartCat=null;
+
+// SYNC
+const $sd=()=>document.getElementById('sdot'),
+      $sl=()=>document.getElementById('slbl');
+function setSync(s,l){$sd().className='dot '+s;$sl().textContent=l}
+function toast(m,e){const t=document.getElementById('toast');t.textContent=m;t.className='toast show'+(e?' err':'');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000)}
+
+// SERIALIZATION
+function aToR(a){return[AC,...a.map(x=>AC.map(k=>x[k]??''))]}
+function rToA(r){if(!r||r.length<2)return[];const[h,...d]=r;return d.map(row=>{const o={};h.forEach((k,i)=>o[k]=row[i]??'');o.ticket=+o.ticket||0;o.tickSys=+o.tickSys||0;o.id=+o.id||Date.now();return o})}
+function wToR(w){return[WC,...Object.entries(w).map(([k,v])=>[k,v.t,v.c,v.q,v.z,v.m])]}
+function rToW(r){const w={};if(!r||r.length<2)return wk;r.slice(1).forEach(row=>{w[row[0]]={t:+row[1]||0,c:+row[2]||0,q:+row[3]||0,z:+row[4]||0,m:+row[5]||0}});return w}
+function pcToR(p){return[PC,...p.map(x=>PC.map(k=>x[k]??''))]}
+function rToPc(r){if(!r||r.length<2)return[];const[h,...d]=r;return d.map(row=>{const o={};h.forEach((k,i)=>o[k]=row[i]??'');return o})}
+function sToR(s){return[SC,...s.map(x=>SC.map(k=>x[k]??''))]}
+function rToS(r){if(!r||r.length<2)return[];const[h,...d]=r;return d.map(row=>{const o={};h.forEach((k,i)=>o[k]=row[i]??'');o.ticket=+o.ticket||0;o.id=+o.id||Date.now();return o})}
+
+// API
+async function get(a){const r=await fetch(API+'?action='+a);return r.json()}
+async function post(b){const r=await fetch(API,{method:'POST',body:JSON.stringify(b)});return r.json()}
+
+async function loadAll(){
+  setSync('syncing','cargando…');
+  try{
+    const[ar,wr,pr,sr]=await Promise.all([get('getAccounts'),get('getWeekly'),get('getPostcitas'),get('getSegmentacion')]);
+    accs=rToA(ar);const w2=rToW(wr);if(Object.keys(w2).length)wk=w2;pcs=rToPc(pr);segs=rToS(sr);
+    setSync('ok','sincronizado');return true;
+  }catch(e){setSync('err','sin conexión');toast('Error al conectar',true);return false}
+}
+async function saveAccs(){setSync('syncing','guardando…');try{await post({action:'saveAccounts',data:aToR(accs)});setSync('ok','guardado');toast('✓ Guardado')}catch(e){setSync('err','error');toast('Error',true)}}
+async function saveWkData(){setSync('syncing','guardando…');try{await post({action:'saveWeekly',data:wToR(wk)});setSync('ok','guardado');toast('✓ Semana guardada')}catch(e){setSync('err','error');toast('Error',true)}}
+async function savePcData(){setSync('syncing','guardando…');try{await post({action:'savePostcitas',data:pcToR(pcs)});setSync('ok','guardado');toast('✓ Captura guardada')}catch(e){setSync('err','error');toast('Error',true)}}
+async function saveSegData(){setSync('syncing','guardando…');try{await post({action:'saveSegmentacion',data:sToR(segs)});setSync('ok','guardado');toast('✓ Guardado')}catch(e){setSync('err','error');toast('Error',true)}}
+
+// HELPERS
+const ds=d=>{if(!d)return 999;return Math.floor((new Date()-new Date(d))/864e5)};
+const fmx=n=>'$'+Math.round(n).toLocaleString('es-MX');
+const cC=c=>({Verde:'bv',Amarillo:'by',Rojo:'br2',D:'bp',Nuevos:'bb'})[c]||'';
+const eC=e=>({E1:'e1',E2:'e2',E3:'e3',E4:'e4',E5:'e5',E6:'e6',E7:'e7',Nurture:'en'})[e]||'';
+const syC=s=>({inicial:'si',diagnostico:'sd',propuesta:'sp',avanzado:'sa'})[s]||'';
+const syL=s=>({inicial:'Inicial',diagnostico:'Diagnóstico',propuesta:'Propuesta enviada',avanzado:'Avanzado ⭐'})[s]||'—';
+const cw=()=>Math.min(Math.max(Math.floor((new Date()-SS)/864e5/7)+1,1),8);
+const B=v=>v==='true'||v===true;
+
+function getAl(a){
+  const d=ds(a.fecha);
+  if(a.etapa==='E2'&&d>7)return{l:'red',m:'Más de 7 días en E2 sin avance'};
+  if(a.etapa==='E3'&&d>14)return{l:'red',m:'Más de 14 días en E3 sin realizarse'};
+  if(a.etapa==='E6'&&a.cotF&&ds(a.cotF)>=14)return{l:'red',m:'Cotización ≥14 días → conv. honesta'};
+  if(a.etapa==='E6'&&a.cotF&&!B(a.slaOk)&&ds(a.cotF)<=1)return{l:'red',m:'SLA pendiente confirmar — ¿<12h?'};
+  if(a.etapa==='E6'&&a.cotF&&ds(a.cotF)>=10)return{l:'yellow',m:'Día 10 → llamada con apertura'};
+  if(a.etapa==='E6'&&a.cotF&&ds(a.cotF)>=7)return{l:'yellow',m:'Día 7 → enviar caso de estudio'};
+  if(a.etapa==='E6'&&a.cotF&&ds(a.cotF)>=4)return{l:'yellow',m:'Día 4 → llamada 10 min'};
+  if(a.etapa==='E2'&&d>4)return{l:'yellow',m:d+' días en E2 — considera 2° touchpoint'};
+  return null;
+}
+
+// ══ DASHBOARD ══
+function renderDash(){
+  document.getElementById('dl').style.display='none';document.getElementById('dc').style.display='block';
+  const cl=accs.filter(a=>a.etapa==='E7');
+  const tot=cl.reduce((s,a)=>s+(a.ticket||0),0);
+  const ind=cl.filter(a=>['Sub Product','Story','Stream'].includes(a.tipo)).reduce((s,a)=>s+(a.ticket||0),0);
+  const may=cl.filter(a=>a.tipo==='System'||(a.ticket||0)>500000).reduce((s,a)=>s+(a.ticket||0),0);
+  const pct=Math.min(100,Math.round(tot/META*100));
+  const pv=accs.filter(a=>!['E7','Nurture'].includes(a.etapa)).reduce((s,a)=>s+(a.ticket||0),0);
+  const sAdv=accs.filter(a=>a.tipo==='System'&&a.sysAv==='avanzado').length;
+  const rA=accs.filter(a=>getAl(a)?.l==='red').length;
+  const yA=accs.filter(a=>getAl(a)?.l==='yellow').length;
+  const cotsT=accs.filter(a=>a.cotF).length;
+  const slaC=accs.filter(a=>a.cotF&&B(a.slaOk)).length;
+  const slP=cotsT>0?Math.round(slaC/cotsT*100):100;
+  const segDone=segs.length;
+
+  document.getElementById('ctop').innerHTML=`
+    <div class="card ${pct>=100?'good':pct>=50?'warn':'bad'}"><div class="lbl">Facturado cerrado</div><div class="val">${fmx(tot)}</div><div class="sub">${pct}% de $1M</div></div>
+    <div class="card"><div class="lbl">Pipeline activo</div><div class="val" style="font-size:18px">${fmx(pv)}</div><div class="sub">${accs.filter(a=>!['E7','Nurture'].includes(a.etapa)).length} cuentas</div></div>
+    <div class="card ${sAdv>=2?'good':sAdv>=1?'warn':'bad'}"><div class="lbl">Systems avanzados Q3</div><div class="val">${sAdv}</div><div class="sub">Meta: 2–3 para Marqui</div></div>
+    <div class="card ${segDone>=20?'good':segDone>=10?'warn':'bad'}"><div class="lbl">Empresas segmentadas</div><div class="val">${segDone}</div><div class="sub">Paso previo al contacto</div></div>
+    <div class="card ${slP===100?'good':slP>=80?'warn':'bad'}"><div class="lbl">SLA &lt;12h</div><div class="val">${slP}%</div><div class="sub">${slaC} de ${cotsT}</div></div>
+    <div class="card ${rA===0?'good':rA<=2?'warn':'bad'}"><div class="lbl">Alertas críticas</div><div class="val">${rA}</div><div class="sub">${yA} advertencias</div></div>
+    <div class="card"><div class="lbl">Semana sprint</div><div class="val">${cw()} / 8</div><div class="sub">May–jul 2026</div></div>
+  `;
+
+  document.getElementById('pbars').innerHTML=`
+    <div class="br"><div class="bl"><span>Total cerrado</span><strong>${fmx(tot)} / $1,000,000</strong></div><div class="btrack"><div class="bfill" style="width:${Math.min(100,tot/META*100)}%;background:var(--g)"></div></div></div>
+    <div class="br"><div class="bl"><span style="color:var(--g)">Proyectos individuales · meta $600K–$700K</span><strong>${fmx(ind)} / $650,000</strong></div><div class="btrack"><div class="bfill" style="width:${Math.min(100,ind/MI*100)}%;background:var(--g)"></div></div></div>
+    <div class="br"><div class="bl"><span style="color:var(--p)">Cierres mayores / System · meta $300K–$400K</span><strong>${fmx(may)} / $350,000</strong></div><div class="btrack"><div class="bfill" style="width:${Math.min(100,may/MM*100)}%;background:var(--p)"></div></div></div>
+  `;
+
+  const sts=['E1','E2','E3','E4','E5','E6','E7','Nurture'],sN=['Segmentada','Touchpoint','Cita Ag.','Cita Real.','Cot.Sol.','Cot.Entregada','Cerrado','Nurture'],sCol=['#aaa','#1d4ed8','#1a7f4b','#b45309','#c2410c','#6d28d9','#1a7f4b','#bbb'];
+  document.getElementById('funnelbox').innerHTML=sts.map((e,i)=>`<div class="fc" onclick="fgo('${e}')"><div class="code">${e}</div><div class="num" style="color:${sCol[i]}">${accs.filter(a=>a.etapa===e).length}</div><div class="nm">${sN[i]}</div></div>`).join('');
+
+  const syO=['avanzado','propuesta','diagnostico','inicial'];
+  const syAcs=accs.filter(a=>a.tipo==='System'&&!['E1','Nurture'].includes(a.etapa)).sort((a,b)=>syO.indexOf(a.sysAv)-syO.indexOf(b.sysAv));
+  document.getElementById('sysq3').innerHTML=syAcs.length?syAcs.map(a=>`<div class="si2"><div style="flex:1"><div style="font-size:12px;font-weight:500">${a.empresa}</div><div style="font-size:11px;color:var(--ink3)">${a.nombre} · ${a.resp}</div></div><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--p)">${a.tickSys?fmx(a.tickSys)+'/año':'—'}</span><span class="badge ${syC(a.sysAv)}">${syL(a.sysAv)}</span><span class="badge ${eC(a.etapa)}">${a.etapa}</span></div>`).join(''):`<div class="al yellow"><i class="ti ti-alert-triangle"></i> Sin Systems en pipeline activo. Meta: 2–3 en negociación avanzada para Marqui el 1 julio.</div>`;
+
+  const alL=accs.map(a=>({a,al:getAl(a)})).filter(x=>x.al).sort((x,y)=>x.al.l==='red'?-1:1).slice(0,7);
+  document.getElementById('alertsbox').innerHTML=alL.length?alL.map(({a,al})=>`<div class="al ${al.l}"><i class="ti ti-alert-triangle"></i><div><strong>${a.empresa}</strong> (${a.nombre}) — ${al.m}</div></div>`).join(''):`<div class="al green"><i class="ti ti-check"></i> Sin alertas críticas activas.</div>`;
+
+  const cbs=['Verde','Amarillo','Rojo','D','Nuevos'],cbC=['#1a7f4b','#b45309','#b91c1c','#6d28d9','#1d4ed8'];
+  const cbN=cbs.map(c=>accs.filter(a=>a.cubo===c).length);
+  if(chartCubo)chartCubo.destroy();
+  chartCubo=new Chart(document.getElementById('chartCubo'),{type:'doughnut',data:{labels:cbs,datasets:[{data:cbN,backgroundColor:cbC,borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'62%'}});
+  document.getElementById('legCubo').innerHTML=cbs.map((c,i)=>`<span class="litem"><span class="ldot" style="background:${cbC[i]}"></span>${c} (${cbN[i]})</span>`).join('');
+
+  const mAs=accs.filter(a=>B(a.marq));
+  document.getElementById('marquisum').innerHTML=`<div class="panel" style="padding:.9rem"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:.85rem">
+    <div class="card" style="margin:0"><div class="lbl">Total introd.</div><div class="val">${mAs.length}</div><div class="sub">Meta: 10</div></div>
+    <div class="card" style="margin:0"><div class="lbl">Con cita</div><div class="val">${mAs.filter(a=>['E3','E4','E5','E6','E7'].includes(a.etapa)).length}</div></div>
+    <div class="card" style="margin:0"><div class="lbl">En pipeline</div><div class="val">${mAs.filter(a=>['E4','E5','E6','E7'].includes(a.etapa)).length}</div></div>
+    <div class="card ${mAs.filter(a=>a.etapa==='E7').length>0?'good':''}" style="margin:0"><div class="lbl">Cerradas</div><div class="val">${mAs.filter(a=>a.etapa==='E7').length}</div></div>
+  </div>${mAs.length?`<div style="display:flex;flex-direction:column;gap:4px">${mAs.map(a=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid var(--bd)"><span class="badge ${eC(a.etapa)}">${a.etapa}</span><strong>${a.empresa}</strong> — ${a.nombre}<span style="margin-left:auto;color:var(--ink3)">${a.resp}</span>${a.ticket?`<span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--ink2)">${fmx(a.ticket)}</span>`:''}</div>`).join('')}</div>`:`<p style="font-size:12px;color:var(--ink3)">Sin introducciones registradas. Marqui inicia el 18 de mayo. Meta: 10 introducciones calientes.</p>`}</div>`;
+}
+
+function fgo(e){document.querySelectorAll('.nav button')[2].click();setTimeout(()=>{document.getElementById('f-etapa').value=e;renderPipeline()},50)}
+
+// ══ SEGMENTACIÓN ══
+const cuboDefs={
+  Verde:{label:'🟢 Verde',desc:'Recurrente caliente en sector saludable',color:'#1a7f4b',bg:'#e8f5ee',border:'#c8ecd8',criterios:'Proyecto reciente (<12m) + satisfacción alta + sector construyendo marca. Candidato directo a SHORE System. Prioridad #1 del sprint.'},
+  Amarillo:{label:'🟡 Amarillo',desc:'Recurrente saludable sector estable',color:'#b45309',bg:'#fef3cd',border:'#fde68a',criterios:'Relación viva pero menos reciente. Sector estable que compra por estructura institucional. Candidato a Story/Stream con sembrar System a mediano plazo.'},
+  Rojo:{label:'🔴 Rojo',desc:'Recurrente en sector contraído',color:'#b91c1c',bg:'#fef2f2',border:'#fecaca',criterios:'Relación previa en sector con presupuestos congelados (auto, manufactura). No vender activamente. Mantener relación para reactivación.'},
+  D:{label:'🟣 D',desc:'Cotizaron pero no cerraron',color:'#6d28d9',bg:'#f5f3ff',border:'#ddd6fe',criterios:'Pipeline anterior bateado o pausado. Re-abordar con narrativa del relanzamiento, no como seguimiento de cotización vieja.'},
+  Nuevos:{label:'🔵 Nuevos',desc:'Cuentas frías calificadas',color:'#1d4ed8',bg:'#eff6ff',border:'#bfdbfe',criterios:'ICP: facturación $50M–$500M, decisor identificado, sector en construcción de marca. Universo: 50-100 cuentas durante el sprint.'},
+};
+
+function renderCuboCards(){
+  const cubos=Object.keys(cuboDefs);
+  document.getElementById('cuboCards').innerHTML=cubos.map(c=>{
+    const d=cuboDefs[c];const cnt=segs.filter(s=>s.cubo===c).length;
+    return`<div class="seg-card" style="border-color:${d.border}" onclick="this.classList.toggle('selected')">
+      <div class="sc-cubo" style="color:${d.color}">${d.label}</div>
+      <div class="sc-def">${d.desc}</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div class="sc-cnt" style="color:${d.color}">${cnt}</div>
+        <div class="sc-tick" style="font-family:'DM Mono',monospace">${fmx(segs.filter(s=>s.cubo===c).reduce((sum,s)=>sum+(s.ticket||0),0))}</div>
+      </div>
+      <div class="seg-criteria">${d.criterios}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderSeg(){
+  const fC=document.getElementById('sf-cubo').value;
+  const fS=document.getElementById('sf-sector').value;
+  const fE=document.getElementById('sf-estado').value;
+  const fB=document.getElementById('sf-buscar').value.toLowerCase();
+  let list=[...segs];
+  if(fC)list=list.filter(s=>s.cubo===fC);
+  if(fS)list=list.filter(s=>s.sector===fS);
+  if(fE==='sin_tocar')list=list.filter(s=>s.estado!=='en_pipeline');
+  if(fE==='en_pipeline')list=list.filter(s=>s.estado==='en_pipeline');
+  if(fB)list=list.filter(s=>(s.empresa||'').toLowerCase().includes(fB)||(s.decisor||'').toLowerCase().includes(fB));
+  const saludLabel={'saludable':'<span class="badge bv">Saludable</span>','estable':'<span class="badge by">Estable</span>','contraido':'<span class="badge br2">Contraído</span>'}
+  const relLabel={'caliente':'Caliente','viva':'Viva','dormida':'Dormida','nueva':'Nueva','cotizo':'Cotizó'}
+  const ajusteLabel={'alto':'<span class="badge bv">Alto</span>','medio':'<span class="badge by">Medio</span>','bajo':'<span class="badge br2">Bajo</span>'}
+  document.getElementById('seg-body').innerHTML=list.map(s=>`<tr>
+    <td><strong>${s.empresa}</strong></td>
+    <td style="font-size:11px">${s.decisor||'—'}</td>
+    <td><span class="badge ${cC(s.cubo)}">${s.cubo}</span></td>
+    <td style="font-size:11px">${s.sector||'—'}</td>
+    <td>${saludLabel[s.salud]||'<span style="color:var(--ink3)">—</span>'}</td>
+    <td style="font-size:11px">${relLabel[s.relacion]||'—'}</td>
+    <td>${ajusteLabel[s.ajuste]||'<span style="color:var(--ink3)">—</span>'}</td>
+    <td>${s.estado==='en_pipeline'?`<span class="badge bv">En pipeline</span>`:`<span class="badge e1">Sin tocar</span>`}</td>
+    <td style="font-size:11px;max-width:140px;color:var(--ink2)">${s.notas||'—'}</td>
+    <td style="display:flex;gap:4px;padding-top:9px">
+      <button class="bi" onclick="editSeg(${s.id})"><i class="ti ti-edit"></i></button>
+      <button class="bi gr" onclick="promoverSeg(${s.id})" title="Mover al pipeline"><i class="ti ti-arrow-right"></i></button>
+    </td>
+  </tr>`).join('')||`<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--ink3)">Sin empresas segmentadas aún. Agrega empresas antes de iniciar el contacto.</td></tr>`;
+}
+
+function openSegModal(id){
+  editSegId=id||null;document.getElementById('seg-modal-title').textContent=id?'Editar empresa':'Agregar empresa a segmentar';
+  if(id){const s=segs.find(x=>x.id===id);
+    ['empresa','decisor','sector','cubo','salud','relacion','ajuste','ticket','semana','notas'].forEach(f=>document.getElementById('sg-'+f).value=s[f]||'');
+    ['ck1','ck2','ck3','ck4'].forEach(f=>document.getElementById('sg-'+f).checked=B(s[f]));
+  }else{
+    ['empresa','decisor','ticket','notas'].forEach(f=>document.getElementById('sg-'+f).value='');
+    ['sector','cubo','salud','relacion','ajuste'].forEach(f=>document.getElementById('sg-'+f).value='');
+    document.getElementById('sg-cubo').value='Nuevos';document.getElementById('sg-semana').value='sem2';
+    ['ck1','ck2','ck3','ck4'].forEach(f=>document.getElementById('sg-'+f).checked=false);
+  }
+  document.getElementById('mo-seg').classList.add('open');
+}
+function editSeg(id){openSegModal(id)}
+function closeSegModal(){document.getElementById('mo-seg').classList.remove('open')}
+
+async function saveSeg(){
+  const empresa=document.getElementById('sg-empresa').value.trim();
+  if(!empresa){toast('La empresa es obligatoria',true);return}
+  const btn=document.getElementById('btn-seg-save');btn.disabled=true;btn.textContent='Guardando…';
+  const s={id:editSegId||Date.now(),empresa,decisor:document.getElementById('sg-decisor').value,sector:document.getElementById('sg-sector').value,cubo:document.getElementById('sg-cubo').value,salud:document.getElementById('sg-salud').value,relacion:document.getElementById('sg-relacion').value,ajuste:document.getElementById('sg-ajuste').value,ck1:document.getElementById('sg-ck1').checked?'true':'false',ck2:document.getElementById('sg-ck2').checked?'true':'false',ck3:document.getElementById('sg-ck3').checked?'true':'false',ck4:document.getElementById('sg-ck4').checked?'true':'false',ticket:parseInt(document.getElementById('sg-ticket').value)||0,semana:document.getElementById('sg-semana').value,notas:document.getElementById('sg-notas').value,estado:editSegId?segs.find(x=>x.id===editSegId)?.estado||'sin_tocar':'sin_tocar'};
+  if(editSegId)segs=segs.map(x=>x.id===editSegId?s:x);else segs.push(s);
+  closeSegModal();renderCuboCards();renderSeg();await saveSegData();
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar';
+}
+
+async function promoverSeg(id){
+  const s=segs.find(x=>x.id===id);if(!s)return;
+  s.estado='en_pipeline';
+  // Pre-populate pipeline modal
+  openAccModal();
+  document.getElementById('a-empresa').value=s.empresa;
+  document.getElementById('a-nombre').value=s.decisor||'';
+  document.getElementById('a-cubo').value=s.cubo;
+  document.getElementById('a-sector').value=s.sector||'';
+  document.getElementById('a-ticket').value=s.ticket||'';
+  s.estado='en_pipeline';
+  segs=segs.map(x=>x.id===id?s:x);
+  renderSeg();await saveSegData();
+  toast('Empresa promovida al pipeline — completa los datos de seguimiento');
+}
+
+// ══ PIPELINE ══
+function renderPipeline(){
+  const fC=document.getElementById('f-cubo').value,fE=document.getElementById('f-etapa').value,fR=document.getElementById('f-resp').value,fT=document.getElementById('f-tipo').value,fA=document.getElementById('f-alrt').value;
+  const ord=['E6','E5','E4','E3','E2','E1','E7','Nurture'];
+  let list=[...accs];
+  if(fC)list=list.filter(a=>a.cubo===fC);if(fE)list=list.filter(a=>a.etapa===fE);if(fR)list=list.filter(a=>a.resp===fR);if(fT)list=list.filter(a=>a.tipo===fT);if(fA)list=list.filter(a=>getAl(a));
+  list.sort((a,b)=>ord.indexOf(a.etapa)-ord.indexOf(b.etapa));
+  document.getElementById('pipeline-body').innerHTML=list.map(a=>{
+    const al=getAl(a),d=a.fecha?ds(a.fecha):null,dc=d>7?'var(--r)':d>4?'var(--y)':'inherit';
+    return`<tr>
+      <td><strong>${a.nombre}</strong><br><span style="color:var(--ink3);font-size:11px">${a.empresa}${a.sector?' · '+a.sector:''}${B(a.marq)?'<span style="color:var(--p);margin-left:4px" title="Intro Marqui">★</span>':''}</span></td>
+      <td><span class="badge ${cC(a.cubo)}">${a.cubo}</span></td>
+      <td><span class="badge ${eC(a.etapa)}">${a.etapa}</span></td>
+      <td style="font-family:'DM Mono',monospace;font-weight:500">${a.ticket?fmx(a.ticket):'—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--p)">${a.tickSys?fmx(a.tickSys)+'/año':'—'}</td>
+      <td>${a.tipo}</td>
+      <td style="color:${dc};font-family:'DM Mono',monospace">${d!==null?d+'d':'—'}<br><span style="font-size:10px;color:var(--ink3)">${a.fecha||''}</span></td>
+      <td style="text-align:center">${a.cotF||['E5','E6','E7'].includes(a.etapa)?`<i class="ti ti-${B(a.cotSol)?'circle-check':'circle-x'}" style="color:${B(a.cotSol)?'var(--g)':'var(--r)'};font-size:14px"></i>`:'<span style="color:var(--ink3)">—</span>'}</td>
+      <td style="text-align:center">${a.cotF?`<i class="ti ti-${B(a.slaOk)?'circle-check':'circle-x'}" style="color:${B(a.slaOk)?'var(--g)':'var(--r)'};font-size:14px"></i>`:'<span style="color:var(--ink3)">—</span>'}</td>
+      <td>${a.sysAv?`<span class="badge ${syC(a.sysAv)}">${syL(a.sysAv)}</span>`:'<span style="color:var(--ink3);font-size:11px">—</span>'}</td>
+      <td>${a.resp}</td>
+      <td style="font-size:11px">${al?`<span style="color:${al.l==='red'?'var(--r)':'var(--y)'}"><i class="ti ti-alert-triangle"></i> ${al.m}</span>`:'<span style="color:var(--ink3)">—</span>'}</td>
+      <td style="display:flex;gap:4px;padding-top:9px"><button class="bi" onclick="editAcc(${a.id})"><i class="ti ti-edit"></i></button><button class="bi gr" onclick="advStage(${a.id})" title="Avanzar etapa"><i class="ti ti-arrow-right"></i></button></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="13" style="text-align:center;padding:2rem;color:var(--ink3)">Sin cuentas con esos filtros</td></tr>`;
+}
+
+async function advStage(id){
+  const ord=['E1','E2','E3','E4','E5','E6','E7'];
+  const a=accs.find(x=>x.id===id);if(!a)return;
+  const i=ord.indexOf(a.etapa);if(i<0||i>=ord.length-1)return;
+  a.etapa=ord[i+1];a.fecha=new Date().toISOString().split('T')[0];
+  if(a.etapa==='E6')a.cotF=new Date().toISOString().split('T')[0];
+  // Marcar empresa como en_pipeline si existe en segmentación
+  const seg=segs.find(s=>s.empresa.toLowerCase()===a.empresa.toLowerCase());
+  if(seg&&seg.estado!=='en_pipeline'){seg.estado='en_pipeline';await saveSegData()}
+  renderPipeline();renderDash();await saveAccs();
+}
+
+// MODAL CUENTA
+function openAccModal(id){
+  editAccId=id||null;document.getElementById('acc-title').textContent=id?'Editar cuenta':'Agregar cuenta';
+  if(id){const a=accs.find(x=>x.id===id);
+    ['nombre','empresa','cubo','etapa','tipo','ticket','resp','fecha','accion','sector','notas'].forEach(f=>document.getElementById('a-'+f).value=a[f]||'');
+    document.getElementById('a-cotf').value=a.cotF||'';document.getElementById('a-ticksys').value=a.tickSys||'';document.getElementById('a-sysav').value=a.sysAv||'';
+    document.getElementById('a-cotsol').checked=B(a.cotSol);document.getElementById('a-slaok').checked=B(a.slaOk);document.getElementById('a-marq').checked=B(a.marq);
+  }else{
+    ['nombre','empresa','ticket','accion','notas','sector'].forEach(f=>document.getElementById('a-'+f).value='');
+    document.getElementById('a-cotf').value='';document.getElementById('a-ticksys').value='';
+    document.getElementById('a-fecha').value=new Date().toISOString().split('T')[0];
+    document.getElementById('a-cubo').value='Verde';document.getElementById('a-etapa').value='E1';document.getElementById('a-tipo').value='Sub Product';document.getElementById('a-resp').value='Adrián';document.getElementById('a-sysav').value='';
+    document.getElementById('a-cotsol').checked=false;document.getElementById('a-slaok').checked=false;document.getElementById('a-marq').checked=false;
+  }
+  document.getElementById('mo-acc').classList.add('open');
+}
+function editAcc(id){openAccModal(id)}
+function closeAccModal(){document.getElementById('mo-acc').classList.remove('open')}
+
+async function saveAcc(){
+  const n=document.getElementById('a-nombre').value.trim(),e=document.getElementById('a-empresa').value.trim();
+  if(!n||!e){toast('Nombre y empresa son obligatorios',true);return}
+  const btn=document.getElementById('btn-acc-save');btn.disabled=true;btn.textContent='Guardando…';
+  const a={id:editAccId||Date.now(),nombre:n,empresa:e,cubo:document.getElementById('a-cubo').value,etapa:document.getElementById('a-etapa').value,tipo:document.getElementById('a-tipo').value,ticket:parseInt(document.getElementById('a-ticket').value)||0,tickSys:parseInt(document.getElementById('a-ticksys').value)||0,resp:document.getElementById('a-resp').value,fecha:document.getElementById('a-fecha').value,accion:document.getElementById('a-accion').value,cotF:document.getElementById('a-cotf').value||null,sector:document.getElementById('a-sector').value,notas:document.getElementById('a-notas').value,slaOk:document.getElementById('a-slaok').checked?'true':'false',cotSol:document.getElementById('a-cotsol').checked?'true':'false',sysAv:document.getElementById('a-sysav').value,marq:document.getElementById('a-marq').checked?'true':'false'};
+  if(editAccId)accs=accs.map(x=>x.id===editAccId?a:x);else accs.push(a);
+  // Sync seg estado
+  const seg=segs.find(s=>s.empresa.toLowerCase()===e.toLowerCase());
+  if(seg&&seg.estado!=='en_pipeline'){seg.estado='en_pipeline';await saveSegData()}
+  closeAccModal();renderPipeline();renderDash();await saveAccs();
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar';
+}
+
+// ══ CADENCIA ══
+function renderCad(){
+  const cad=accs.filter(a=>a.cotF&&!['E7','Nurture'].includes(a.etapa)).sort((a,b)=>ds(b.cotF)-ds(a.cotF));
+  document.getElementById('cad-body').innerHTML=cad.length?cad.map(a=>{
+    const d=ds(a.cotF);let prox,accion,cls;
+    if(d<2){prox='Día 2';accion='WhatsApp: ¿pudiste revisarla?';cls='d2'}else if(d<4){prox='Día 4';accion='Llamada 10 min';cls='d4'}else if(d<7){prox='Día 7';accion='Email caso de estudio (Adrián)';cls='d7'}else if(d<10){prox='Día 10';accion='Llamada con apertura (Adrián)';cls='d10'}else if(d<14){prox='Día 14';accion='¡Conversación honesta! (Adrián)';cls='d14'}else if(d<21){prox='Día 21';accion='Última oportunidad o nurture';cls='d21'}else{prox='Día 30+';accion='Mover a nurture (Karmina)';cls='d30'}
+    return`<tr><td><strong>${a.nombre}</strong> / ${a.empresa}</td><td style="font-family:'DM Mono',monospace">${a.cotF}</td><td style="font-family:'DM Mono',monospace;font-weight:700;color:${d>=14?'var(--r)':d>=7?'var(--y)':'inherit'}">${d}</td><td><span class="badge ${cls}">${prox}</span></td><td style="font-size:11px">${accion}</td><td style="text-align:center"><i class="ti ti-${B(a.slaOk)?'circle-check':'circle-x'}" style="color:${B(a.slaOk)?'var(--g)':'var(--r)'};font-size:14px"></i></td><td>${a.resp}</td></tr>`;
+  }).join(''):`<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--ink3)">Sin cotizaciones en cadencia activa</td></tr>`;
+}
+
+// ══ POST-CITA ══
+function setR(v){pcR=v;document.querySelectorAll('#rating-msg .rbtn').forEach(b=>{b.className='rbtn'+(parseInt(b.dataset.v)<=v?' a'+v:'')})}
+
+function renderPcs(){
+  if(!pcs.length){document.getElementById('pc-list').style.display='none';document.getElementById('pc-empty').style.display='block'}
+  else{
+    document.getElementById('pc-empty').style.display='none';document.getElementById('pc-list').style.display='block';
+    document.getElementById('pc-list').innerHTML=[...pcs].reverse().map(p=>`
+      <div class="pcc">
+        <div class="pch">
+          <div><div style="font-size:14px;font-weight:600">${p.emp}</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${p.dec} · ${p.fec} · ${p.pre}</div></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            ${p.rat?`<div>${[1,2,3,4,5].map(i=>`<span class="star ${parseInt(p.rat)>=i?'on':'off'}">★</span>`).join('')}</div>`:''}
+            ${p.cs==='true'?`<span class="badge e5">Cot. solicitada</span>`:''}
+            <span class="badge ${cC(p.tip)}">${p.tip}</span>
+          </div>
+        </div>
+        <div class="pcgrid">
+          ${p.sit?`<div class="pcf"><div class="pclbl">Situación actual</div><div class="pcval">${p.sit}</div></div>`:''}
+          ${p.obj?`<div class="pcf"><div class="pclbl">Objetivos 2026</div><div class="pcval">${p.obj}</div></div>`:''}
+          ${p.cam?`<div class="pcf full"><div class="pclbl" style="color:var(--g)">⭐ Lo que cambiaría (ORO)</div><div class="pcval">${p.cam}</div></div>`:''}
+          ${p.res?`<div class="pcf"><div class="pclbl">Qué resonó</div><div class="pcval">${p.res}</div></div>`:''}
+          ${p.conf?`<div class="pcf"><div class="pclbl">Qué confundió</div><div class="pcval">${p.conf}</div></div>`:''}
+          ${p.obj2?`<div class="pcf"><div class="pclbl">Objeciones</div><div class="pcval">${p.obj2.split(',').filter(Boolean).map(o=>`<span class="badge e2" style="margin:2px">${o.trim()}</span>`).join(' ')}</div></div>`:''}
+          ${p.pp?`<div class="pcf full"><div class="pclbl">Próximo paso</div><div class="pcval">${p.pp}</div></div>`:''}
+        </div>
+      </div>`).join('');
+  }
+  const n=pcs.length;if(!n){['objsum','sectsum'].forEach(id=>document.getElementById(id).innerHTML='<p style="font-size:12px;color:var(--ink3)">Sin datos aún.</p>');return}
+  const rC=[0,0,0,0,0];pcs.forEach(p=>{const r=parseInt(p.rat);if(r>=1&&r<=5)rC[r-1]++});
+  if(chartMsg)chartMsg.destroy();
+  chartMsg=new Chart(document.getElementById('chartMsg'),{type:'bar',data:{labels:['1 Nada','2 Poco','3 Regular','4 Bien','5 Muy bien'],datasets:[{data:rC,backgroundColor:['#b91c1c','#b45309','#c2410c','#1d4ed8','#1a7f4b'],borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+  const avg=(pcs.reduce((s,p)=>s+(parseInt(p.rat)||0),0)/n).toFixed(1);
+  document.getElementById('legMsg').innerHTML=`<span style="font-size:11px;color:var(--ink3)">Promedio: <strong style="color:var(--ink)">${avg}</strong> / 5 · ${n} citas capturadas</span>`;
+  const oM={};pcs.forEach(p=>{if(p.obj2)p.obj2.split(',').forEach(o=>{const k=o.trim();if(k)oM[k]=(oM[k]||0)+1})});
+  const oL={info_correo:'Mándame info',ya_tenemos:'Ya tenemos proveedor',mal_momento:'No es buen momento',precio:'¿Cuánto cuesta?',presupuesto:'Presupuesto congelado',tamano:'¿Qué tamaño?',comite:'Necesito consultarlo',otra:'Otra'};
+  document.getElementById('objsum').innerHTML=Object.entries(oM).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="br"><div class="bl"><span>${oL[k]||k}</span><strong>${v}×</strong></div><div class="btrack"><div class="bfill" style="width:${Math.min(100,v/n*100)}%;background:var(--r)"></div></div></div>`).join('')||'<p style="font-size:12px;color:var(--ink3)">Sin objeciones registradas.</p>';
+  const catK=[['es','SHORE System'],['est','Story/Stream'],['esb','Sub Products'],['er','Reporting resultados']];
+  const catS=catK.map(([k])=>{const vs=pcs.map(p=>({claro:100,regular:60,confuso:20,np:null})[p[k]]).filter(v=>v!==null&&v!==undefined);return vs.length?Math.round(vs.reduce((s,v)=>s+v,0)/vs.length):0});
+  if(chartCat)chartCat.destroy();
+  chartCat=new Chart(document.getElementById('chartCat'),{type:'bar',data:{labels:catK.map(c=>c[1]),datasets:[{data:catS,backgroundColor:['#6d28d9','#1d4ed8','#1a7f4b','#b45309'],borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}}}});
+  const sM={};pcs.forEach(p=>{const r=parseInt(p.rat)||0;const k=p.tip||'Otros';if(!sM[k])sM[k]=[];sM[k].push(r)});
+  document.getElementById('sectsum').innerHTML=Object.entries(sM).map(([k,vals])=>{const avg=vals.reduce((s,v)=>s+v,0)/vals.length;return`<div class="br"><div class="bl"><span><span class="badge ${cC(k)}">${k}</span></span><strong>${avg.toFixed(1)}/5</strong></div><div class="btrack"><div class="bfill" style="width:${Math.min(100,avg/5*100)}%;background:var(--b)"></div></div></div>`}).join('')||'<p style="font-size:12px;color:var(--ink3)">Sin datos suficientes.</p>';
+}
+
+function openPcModal(){
+  pcR=0;document.querySelectorAll('#rating-msg .rbtn').forEach(b=>b.className='rbtn');
+  ['pc-emp','pc-dec','pc-sit','pc-obj','pc-proy','pc-op','pc-med','pc-cam','pc-res','pc-conf','pc-pp','pc-not'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pc-fec').value=new Date().toISOString().split('T')[0];
+  document.getElementById('pc-cs').checked=false;
+  document.querySelectorAll('#obj-checks input').forEach(c=>c.checked=false);
+  ['pc-es','pc-est','pc-esb','pc-er'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mo-pc').classList.add('open');
+}
+function closePcModal(){document.getElementById('mo-pc').classList.remove('open')}
+
+async function savePc(){
+  const emp=document.getElementById('pc-emp').value.trim();if(!emp){toast('La empresa es obligatoria',true);return}
+  const btn=document.getElementById('btn-pc-save');btn.disabled=true;btn.textContent='Guardando…';
+  const obj2=[...document.querySelectorAll('#obj-checks input:checked')].map(c=>c.value).join(',');
+  const p={id:Date.now(),emp,dec:document.getElementById('pc-dec').value,fec:document.getElementById('pc-fec').value,pre:document.getElementById('pc-pre').value,tip:document.getElementById('pc-tip').value,sit:document.getElementById('pc-sit').value,obj:document.getElementById('pc-obj').value,proy:document.getElementById('pc-proy').value,op:document.getElementById('pc-op').value,med:document.getElementById('pc-med').value,cam:document.getElementById('pc-cam').value,rat:pcR||'',res:document.getElementById('pc-res').value,conf:document.getElementById('pc-conf').value,obj2,es:document.getElementById('pc-es').value,est:document.getElementById('pc-est').value,esb:document.getElementById('pc-esb').value,er:document.getElementById('pc-er').value,cs:document.getElementById('pc-cs').checked?'true':'false',pp:document.getElementById('pc-pp').value,not:document.getElementById('pc-not').value};
+  pcs.push(p);
+  // Sync cotSol en la cuenta
+  const acc=accs.find(a=>a.empresa.toLowerCase()===emp.toLowerCase());
+  if(acc&&p.cs==='true'){acc.cotSol='true';await saveAccs()}
+  closePcModal();renderPcs();await savePcData();
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar captura';
+}
+
+// ══ MÉTRICAS ══
+function renderMets(){
+  const cl=accs.filter(a=>a.etapa==='E7');
+  const e2p=accs.filter(a=>['E2','E3','E4','E5','E6','E7'].includes(a.etapa)).length;
+  const e3p=accs.filter(a=>['E3','E4','E5','E6','E7'].includes(a.etapa)).length;
+  const e4p=accs.filter(a=>['E4','E5','E6','E7'].includes(a.etapa)).length;
+  const e5p=accs.filter(a=>['E5','E6','E7'].includes(a.etapa)).length;
+  const e6p=accs.filter(a=>['E6','E7'].includes(a.etapa)).length;
+  const e7=cl.length,cR=e6p>0?Math.round(e7/e6p*100):0;
+  const sys=accs.filter(a=>a.tipo==='System'&&!['E1','Nurture'].includes(a.etapa)).length;
+  const cT=accs.filter(a=>a.cotF).length,sC=accs.filter(a=>a.cotF&&B(a.slaOk)).length,slP=cT>0?Math.round(sC/cT*100):100;
+  const csP=e4p>0?Math.round(accs.filter(a=>B(a.cotSol)).length/e4p*100):0;
+  document.getElementById('ckpi').innerHTML=`
+    <div class="card"><div class="lbl">Cuentas tocadas (E2+)</div><div class="val">${e2p}</div><div class="sub">Meta: 150–200</div></div>
+    <div class="card"><div class="lbl">Citas realizadas (E4+)</div><div class="val">${e4p}</div><div class="sub">Meta: 35–50</div></div>
+    <div class="card"><div class="lbl">Cot. sol. en cita</div><div class="val">${csP}%</div><div class="sub">De citas realizadas</div></div>
+    <div class="card ${slP===100?'good':slP>=80?'warn':'bad'}"><div class="lbl">SLA &lt;12h</div><div class="val">${slP}%</div><div class="sub">${sC} de ${cT}</div></div>
+    <div class="card ${e7>=8?'good':e7>=4?'warn':'bad'}"><div class="lbl">Proyectos cerrados</div><div class="val">${e7}</div><div class="sub">Meta: 8–12</div></div>
+    <div class="card ${sys>=2?'good':sys>=1?'warn':'bad'}"><div class="lbl">Systems negociación</div><div class="val">${sys}</div><div class="sub">Meta: 2–3</div></div>
+    <div class="card ${cR>=25?'good':cR>=15?'warn':'bad'}"><div class="lbl">Conv. cot→cierre</div><div class="val">${cR}%</div><div class="sub">Bench: 25–35%</div></div>
+  `;
+  const cb=(l,b,a)=>{const col=a>=b[0]?'var(--g)':a>=b[0]*.6?'var(--y)':'var(--r)';return`<div class="br"><div class="bl"><span>${l}</span><strong style="color:${col}">${a}%</strong></div><div style="font-size:10px;color:var(--ink3);margin-bottom:4px">Bench ${b[0]}–${b[1]}%</div><div class="btrack"><div class="bfill" style="width:${Math.min(100,a)}%;background:${col}"></div></div></div>`};
+  document.getElementById('convRec').innerHTML=cb('E2→E3',[30,50],e2p>0?Math.round(e3p/e2p*100):0)+cb('E3→E4',[80,90],e3p>0?Math.round(e4p/e3p*100):0)+cb('E4→E5',[60,75],e4p>0?Math.round(e5p/e4p*100):0)+cb('E6→E7',[25,35],cR);
+  document.getElementById('convNew').innerHTML=cb('E2→E3',[8,15],0)+cb('E3→E4',[70,80],0)+cb('E4→E5',[35,50],0)+cb('E6→E7',[15,25],cR);
+  const wks=['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5','Sem 6','Sem 7','Sem 8'],wA=Object.values(wk),C=['#1d4ed8','#1a7f4b','#b45309','#b91c1c'];
+  const ds2=[{label:'Cuentas tocadas',data:wA.map(w=>w.t),bC:C[0],bD:[]},{label:'Citas realizadas',data:wA.map(w=>w.c),bC:C[1],bD:[5,3]},{label:'Cotizaciones',data:wA.map(w=>w.q),bC:C[2],bD:[2,2]},{label:'Cierres',data:wA.map(w=>w.z),bC:C[3],bD:[8,3]}];
+  if(chartSem)chartSem.destroy();
+  chartSem=new Chart(document.getElementById('chartSem'),{type:'line',data:{labels:wks,datasets:ds2.map(d=>({label:d.label,data:d.data,borderColor:d.bC,borderDash:d.bD,tension:.3,fill:false,pointRadius:4}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{ticks:{autoSkip:false}}}}});
+  document.getElementById('legSem').innerHTML=ds2.map((d,i)=>`<span class="litem"><span class="ldot" style="background:${C[i]}"></span>${d.label}</span>`).join('');
+  const acum=wA.reduce((arr,w,i)=>{arr.push((arr[i-1]||0)+w.m);return arr},[]);
+  const ml=wks.map((_,i)=>Math.round(META/8*(i+1)));
+  if(chartProy)chartProy.destroy();
+  chartProy=new Chart(document.getElementById('chartProy'),{type:'line',data:{labels:wks,datasets:[{label:'Facturado acumulado',data:acum,borderColor:'#1a7f4b',backgroundColor:'#1a7f4b22',fill:true,tension:.3},{label:'Ritmo necesario $1M',data:ml,borderColor:'#b91c1c',fill:false,tension:0,borderDash:[6,3]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'$'+Math.round(v/1000)+'K'}}}}});
+  document.getElementById('legProy').innerHTML=`<span class="litem"><span class="ldot" style="background:#1a7f4b"></span>Facturado acumulado</span><span class="litem"><span class="ldot" style="background:#b91c1c"></span>Ritmo necesario para $1M</span>`;
+  loadWk();
+}
+
+function loadWk(){const k=document.getElementById('wksel').value,w=wk[k]||{};['t','c','q','z','m'].forEach((f,i)=>document.getElementById(['wkt','wkc','wkq','wkz','wkm'][i]).value=w[f]||0)}
+async function saveWk(){const k=document.getElementById('wksel').value;wk[k]={t:parseInt(document.getElementById('wkt').value)||0,c:parseInt(document.getElementById('wkc').value)||0,q:parseInt(document.getElementById('wkq').value)||0,z:parseInt(document.getElementById('wkz').value)||0,m:parseInt(document.getElementById('wkm').value)||0};renderMets();await saveWkData()}
+
+// ══ JUNTA ══
+function renderJunta(){
+  const all=accs.filter(a=>a.etapa!=='Nurture'),byS=s=>all.filter(a=>a.etapa===s).length,w=cw();
+  const rA=accs.filter(a=>getAl(a)?.l==='red').length;
+  const sAdv=accs.filter(a=>a.tipo==='System'&&a.sysAv==='avanzado').length;
+  const cAct=accs.filter(a=>a.cotF&&!['E7','Nurture'].includes(a.etapa));
+  const sC=accs.filter(a=>a.cotF&&B(a.slaOk)).length,sT=accs.filter(a=>a.cotF).length;
+  const slP=sT>0?Math.round(sC/sT*100):100;
+  const lPc=pcs.length?[...pcs].reverse()[0]:null;
+  const segP=segs.filter(s=>s.estado!=='en_pipeline').length;
+  const wP={1:'Preparación: herramientas + segmentación',2:'Arranque: emails Verde y Amarillo + primeros agendados',3:'Primera ola de citas (6–8 citas)',4:'Primeros cierres: facturas nuevas deben entrar',5:'Expansión a System: upsell post-entrega',6:'Consolidación: diagnósticos System en marcha',7:'Recta final: cierres + preparar handoff a Marqui',8:'Handoff: Marqui full-time, pipeline heredado'};
+  document.getElementById('jb1').innerHTML=`Cuentas activas: <strong>${all.length}</strong> · Pipeline: <strong>${fmx(all.reduce((s,a)=>s+(a.ticket||0),0))}</strong><br>E2: ${byS('E2')} · E3: ${byS('E3')} · E4: ${byS('E4')} · E5: ${byS('E5')} · E6: ${byS('E6')} · E7: ${byS('E7')}<br>Alertas críticas: <strong style="color:${rA>0?'var(--r)':'var(--g)'}">${rA}</strong> · Systems avanzados Q3: <strong style="color:${sAdv>=2?'var(--g)':sAdv>=1?'var(--y)':'var(--r)'}">${sAdv}/3</strong><br>Empresas segmentadas sin tocar: <strong style="color:${segP>0?'var(--y)':'var(--g)'}">${segP}</strong><br><br><em>Tablero actualizado antes de 8:45 AM</em>`;
+  document.getElementById('jb2').innerHTML=`Cotizaciones activas: <strong>${cAct.length}</strong><br>SLA &lt;12h: <strong style="color:${slP===100?'var(--g)':slP>=80?'var(--y)':'var(--r)'}">${slP}%</strong> (${sC}/${sT})<br>Sin avance &gt;7d: <strong style="color:var(--y)">${accs.filter(a=>a.etapa==='E6'&&a.cotF&&ds(a.cotF)>7).length}</strong><br>Conv. honesta pendiente: <strong style="color:var(--r)">${accs.filter(a=>a.etapa==='E6'&&a.cotF&&ds(a.cotF)>=14).length}</strong><br>${lPc?`Última post-cita: <strong>${lPc.emp}</strong> (${lPc.fec}) · rating ${lPc.rat||'—'}/5`:'Sin capturas post-cita esta semana'}<br><br>· ¿Qué objeciones aparecieron?<br>· ¿Ajuste de mensaje necesario?`;
+  document.getElementById('jb3').innerHTML=`Semana: <strong>${w}</strong> · ${wP[w]||'—'}<br><br>· Emails a enviar: ___<br>· Llamadas programadas: ___<br>· Citas agendadas: ___<br>· Cierres proyectados ($MXN): ___`;
+  const bloq=accs.filter(a=>getAl(a)?.l==='red');
+  document.getElementById('jb4').innerHTML=bloq.length?bloq.map(a=>`· <strong>${a.empresa}</strong>: ${getAl(a).m}`).join('<br>')+'<br><br>¿Cotizaciones pendientes de aprobación de Adrián?':'Sin bloqueos críticos.<br><br>· ¿Cotizaciones pendientes de aprobación?<br>· ¿Herramientas de Erick pendientes?';
+  const urg=accs.filter(a=>getAl(a)).sort((a,b)=>getAl(a).l==='red'?-1:1);
+  document.getElementById('jurg').innerHTML=urg.length?urg.map(a=>{const al=getAl(a);return`<tr><td><strong>${a.nombre}</strong> / ${a.empresa}</td><td><span class="badge ${eC(a.etapa)}">${a.etapa}</span></td><td><span class="badge ${cC(a.cubo)}">${a.cubo}</span></td><td style="font-size:11px;color:${al.l==='red'?'var(--r)':'var(--y)'}">${al.m}</td><td style="font-size:11px">${a.accion||'—'}</td><td>${a.resp}</td></tr>`}).join(''):`<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--ink3)">Sin urgencias 👍</td></tr>`;
+  const ci=accs.filter(a=>['E5','E6'].includes(a.etapa));
+  document.getElementById('jcierres').innerHTML=ci.length?ci.map(a=>`<tr><td><strong>${a.nombre}</strong> / ${a.empresa}</td><td style="font-family:'DM Mono',monospace;font-weight:500">${a.ticket?fmx(a.ticket):'—'}</td><td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--p)">${a.tickSys?fmx(a.tickSys)+'/año':'—'}</td><td>${a.tipo}</td><td><span class="badge ${eC(a.etapa)}">${a.etapa}</span></td><td>${a.sysAv?`<span class="badge ${syC(a.sysAv)}">${syL(a.sysAv)}</span>`:'—'}</td><td>${a.resp}</td><td style="color:${a.etapa==='E6'?'var(--g)':'var(--y)'};font-weight:600">${a.etapa==='E6'?'Alta':'Media'}</td></tr>`).join(''):`<tr><td colspan="8" style="text-align:center;padding:1.5rem;color:var(--ink3)">Sin cierres proyectados</td></tr>`;
+  const mA=accs.filter(a=>B(a.marq));
+  document.getElementById('jmarqui').innerHTML=`<div class="panel" style="padding:.9rem"><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:.75rem"><div class="card" style="margin:0;flex:1;min-width:90px"><div class="lbl">Registradas</div><div class="val">${mA.length}</div><div class="sub">Meta: 10</div></div><div class="card" style="margin:0;flex:1;min-width:90px"><div class="lbl">Con cita</div><div class="val">${mA.filter(a=>['E3','E4','E5','E6','E7'].includes(a.etapa)).length}</div></div><div class="card" style="margin:0;flex:1;min-width:90px"><div class="lbl">En pipeline</div><div class="val">${mA.filter(a=>['E4','E5','E6','E7'].includes(a.etapa)).length}</div></div></div>${mA.filter(a=>!['E7','Nurture'].includes(a.etapa)).length?mA.filter(a=>!['E7','Nurture'].includes(a.etapa)).map(a=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid var(--bd)"><span class="badge ${eC(a.etapa)}">${a.etapa}</span><strong>${a.empresa}</strong> — ${a.nombre}<span style="margin-left:auto;color:var(--ink3)">${a.resp}</span></div>`).join(''):'<p style="font-size:12px;color:var(--ink3)">Sin introducciones activas.</p>'}</div>`;
+}
+
+// ══ TAB SWITCH ══
+function sw(name,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');if(btn)btn.classList.add('active');activeTab=name;
+  if(name==='dashboard')renderDash();if(name==='segmentacion'){renderCuboCards();renderSeg();}if(name==='pipeline')renderPipeline();if(name==='seguimiento')renderCad();if(name==='postcita')renderPcs();if(name==='metricas')renderMets();if(name==='junta')renderJunta();
+}
+
+// MODAL CLOSE ON BACKDROP
+['mo-seg','mo-acc','mo-pc'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{if(e.target.id===id)document.getElementById(id).classList.remove('open')}));
+document.getElementById('wksel').addEventListener('change',loadWk);
+
+// ALSO UPDATE APPS SCRIPT NOTE
+// The Apps Script needs getSegmentacion and saveSegmentacion actions added.
+
+// ══ INIT ══
+(async()=>{
+  const ok=await loadAll();
+  renderDash();renderCuboCards();
+  if(!ok){document.getElementById('dl').style.display='none';document.getElementById('dc').style.display='block'}
+  setInterval(async()=>{const ok=await loadAll();if(ok){if(activeTab==='dashboard')renderDash();if(activeTab==='segmentacion'){renderCuboCards();renderSeg();}if(activeTab==='pipeline')renderPipeline();if(activeTab==='seguimiento')renderCad();if(activeTab==='postcita')renderPcs();if(activeTab==='metricas')renderMets();if(activeTab==='junta')renderJunta()}},60000);
+})();
+</script>
+</body>
+</html>
