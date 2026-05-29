@@ -147,6 +147,31 @@ label.fl{font-size:11px;font-weight:600;color:var(--ink2);display:block;margin-b
 .comp-row:hover{background:var(--paper)}
 .comp-name{flex:1;font-weight:500}
 .comp-sector{font-size:11px;color:var(--ink3)}
+/* TOUCHES */
+.trow{display:flex;gap:4px;align-items:center;flex-wrap:nowrap}
+.tbtn{padding:3px 7px;font-size:10px;font-family:'DM Mono',monospace;border:1px solid var(--bd2);border-radius:var(--rad);cursor:pointer;background:var(--sf);color:var(--ink3);transition:.15s;white-space:nowrap;font-weight:500}
+.tbtn:hover{background:var(--paper);color:var(--ink)}
+.tbtn.done{background:var(--gL);color:var(--g);border-color:var(--gM)}
+.tbtn.pending{background:var(--yL);color:var(--y);border-color:var(--yM)}
+.touch-mini{display:flex;gap:3px}
+.td{width:18px;height:18px;border-radius:3px;border:1px solid var(--bd2);background:var(--sf);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;cursor:pointer;transition:.15s;color:var(--ink3)}
+.td:hover{border-color:var(--ink3)}
+.td.done{background:var(--gL);color:var(--g);border-color:var(--gM)}
+.td.next{background:var(--yL);color:var(--y);border-color:var(--yM);animation:pulse2 2s infinite}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.6}}
+/* TOUCH MODAL */
+.tmodal{background:var(--sf);border:1px solid var(--bd);border-radius:var(--radL);padding:1rem;margin-bottom:.75rem}
+.tmodal-title{font-size:11px;font-weight:600;color:var(--ink2);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.06em}
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.titem{background:var(--paper);border:1px solid var(--bd);border-radius:var(--rad);padding:8px 10px}
+.titem.done{background:var(--gL);border-color:var(--gM)}
+.titem.next{background:var(--yL);border-color:var(--yM)}
+.titem .tn{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:5px}
+.titem.done .tn{color:var(--g)}.titem.next .tn{color:var(--y)}
+/* SOURCE BADGE */
+.src{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:500;background:var(--paper);border:1px solid var(--bd2);color:var(--ink3);font-family:'DM Mono',monospace}
+/* SEND-BACK BTN */
+.bi.sendback:hover{color:var(--y);border-color:var(--yM)}
 /* RESPONSIVE */
 @media(max-width:700px){.funnel{grid-template-columns:repeat(4,1fr)}.g2,.g3,.fg,.fg3,.fg4{grid-template-columns:1fr}.nav button span{display:none}}
 </style>
@@ -216,7 +241,7 @@ label.fl{font-size:11px;font-weight:600;color:var(--ink2);display:block;margin-b
 
   <div class="tw">
     <table>
-      <thead><tr><th>Empresa</th><th>Decisor identificado</th><th>Cubo</th><th>Sector</th><th>Salud sectorial</th><th>Relación con Shore</th><th>Ajuste a System</th><th>Estado</th><th>Notas de segmentación</th><th style="width:80px"></th></tr></thead>
+      <thead><tr><th>Empresa</th><th>Contacto</th><th>Puesto</th><th>Cubo</th><th>Sector</th><th>Fuente</th><th>Salud sectorial</th><th>Relación con Shore</th><th>Ajuste a System</th><th>Estado</th><th>Notas</th><th style="width:90px"></th></tr></thead>
       <tbody id="seg-body"></tbody>
     </table>
   </div>
@@ -235,7 +260,7 @@ label.fl{font-size:11px;font-weight:600;color:var(--ink2);display:block;margin-b
   </div>
   <div class="tw">
     <table>
-      <thead><tr><th>Cliente / Empresa</th><th>Cubo</th><th>Etapa</th><th>Ticket proyecto</th><th>Potencial System/año</th><th>Tipo</th><th>Días sin contacto</th><th>Cot. sol. en cita</th><th>SLA &lt;12h</th><th>Avance System</th><th>Resp.</th><th>Alerta</th><th style="width:70px"></th></tr></thead>
+      <thead><tr><th>Cliente / Empresa</th><th>Cubo</th><th>Etapa</th><th>Ticket proyecto</th><th>Potencial System/año</th><th>Tipo</th><th>Último contacto</th><th>T1 Correo</th><th>T2</th><th>T3</th><th>T4</th><th>Cot. sol.</th><th>SLA</th><th>Avance System</th><th>Resp.</th><th>Alerta</th><th style="width:80px"></th></tr></thead>
       <tbody id="pipeline-body"></tbody>
     </table>
   </div>
@@ -332,10 +357,16 @@ label.fl{font-size:11px;font-weight:600;color:var(--ink2);display:block;margin-b
 <div class="mo" id="mo-seg">
   <div class="mdl">
     <h3 id="seg-modal-title">Agregar empresa a segmentar</h3>
+    <div class="msec" style="border-top:none;padding-top:0;margin-top:0">Datos generales</div>
     <div class="fg fg3">
       <div><label class="fl">Empresa</label><input id="sg-empresa" placeholder="Nombre de la empresa"></div>
-      <div><label class="fl">Decisor identificado</label><input id="sg-decisor" placeholder="Nombre y cargo"></div>
+      <div><label class="fl">Contacto / Decisor</label><input id="sg-contacto" placeholder="Nombre completo"></div>
+      <div><label class="fl">Puesto</label><input id="sg-puesto" placeholder="Ej: Director de Marketing"></div>
+    </div>
+    <div class="fg fg3">
       <div><label class="fl">Sector</label><select id="sg-sector"><option value="">Seleccionar</option><option>CPG</option><option>Financiero</option><option>Educación</option><option>Salud</option><option>Industrial</option><option>Automotriz</option><option>Retail</option><option>Tecnología</option><option>Eventos</option><option>Otro</option></select></div>
+      <div><label class="fl">Fuente del lead</label><select id="sg-fuente"><option value="">Seleccionar</option><option value="recurrente">Cliente recurrente</option><option value="referido">Referido</option><option value="marqui">Introducción Marqui</option><option value="linkedin">LinkedIn</option><option value="inbound">Inbound / campaña</option><option value="evento">Evento / networking</option><option value="base_propia">Base de datos propia</option><option value="otro">Otro</option></select></div>
+      <div><label class="fl">Semana de contacto</label><select id="sg-semana"><option value="sem2">Semana 2 (19–25 may)</option><option value="sem3">Semana 3 (26 may–1 jun)</option><option value="sem4">Semana 4 (2–8 jun)</option><option value="sem5">Semana 5+</option></select></div>
     </div>
     <div class="msec" style="border-top:none;padding-top:0;margin-top:0">Clasificación en cubo</div>
     <div class="fg">
@@ -355,7 +386,6 @@ label.fl{font-size:11px;font-weight:600;color:var(--ink2);display:block;margin-b
     </div>
     <div class="fg">
       <div><label class="fl">Ticket potencial estimado ($MXN)</label><input id="sg-ticket" type="number" placeholder="300000"></div>
-      <div><label class="fl">Semana de inicio de contacto</label><select id="sg-semana"><option value="sem2">Semana 2 (19–25 may)</option><option value="sem3">Semana 3 (26 may–1 jun)</option><option value="sem4">Semana 4 (2–8 jun)</option><option value="sem5">Semana 5+</option></select></div>
     </div>
     <div class="fg" style="grid-template-columns:1fr"><div><label class="fl">Notas de segmentación</label><textarea id="sg-notas" rows="2" placeholder="Contexto relevante: proyectos previos, fricciones conocidas, contactos internos…"></textarea></div></div>
     <div class="mfoot"><button class="bs" onclick="closeSegModal()">Cancelar</button><button class="bp2" id="btn-seg-save" onclick="saveSeg()"><i class="ti ti-device-floppy"></i> Guardar</button></div>
@@ -432,6 +462,33 @@ label.fl{font-size:11px;font-weight:600;color:var(--ink2);display:block;margin-b
   </div>
 </div>
 
+<!-- MODAL TOQUES -->
+<div class="mo" id="mo-touch">
+  <div class="mdl" style="max-width:480px">
+    <h3 id="touch-title">Registrar toque</h3>
+    <input type="hidden" id="touch-acc-id">
+    <input type="hidden" id="touch-num">
+    <div class="fg">
+      <div><label class="fl">Fecha del toque</label><input id="touch-fecha" type="date"></div>
+      <div><label class="fl">Canal</label>
+        <select id="touch-canal">
+          <option value="email">📧 Email</option>
+          <option value="llamada">📞 Llamada</option>
+          <option value="whatsapp">💬 WhatsApp</option>
+          <option value="linkedin">💼 LinkedIn</option>
+          <option value="presencial">🤝 Presencial</option>
+          <option value="zoom">🎥 Zoom / videollamada</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg" style="grid-template-columns:1fr"><div><label class="fl">Nota breve (opcional)</label><input id="touch-nota" placeholder="Ej: Respondió interesado, pide cotización…"></div></div>
+    <div class="mfoot">
+      <button class="bs" onclick="closeTouchModal()">Cancelar</button>
+      <button class="bp2" onclick="saveTouch()"><i class="ti ti-device-floppy"></i> Guardar toque</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -441,10 +498,10 @@ const META=1000000,MI=650000,MM=350000;
 const SS=new Date('2026-05-12');
 
 // COLS
-const AC=['id','nombre','empresa','cubo','etapa','tipo','ticket','tickSys','resp','fecha','accion','cotF','sector','notas','slaOk','cotSol','sysAv','marq'];
+const AC=['id','nombre','empresa','cubo','etapa','tipo','ticket','tickSys','resp','fecha','accion','cotF','sector','notas','slaOk','cotSol','sysAv','marq','t1f','t1c','t2f','t2c','t3f','t3c','t4f','t4c'];
 const WC=['key','t','c','q','z','m'];
 const PC=['id','emp','dec','fec','pre','tip','sit','obj','proy','op','med','cam','rat','res','conf','obj2','es','est','esb','er','cs','pp','not'];
-const SC=['id','empresa','decisor','sector','cubo','salud','relacion','ajuste','ck1','ck2','ck3','ck4','ticket','semana','notas','estado'];
+const SC=['id','empresa','contacto','puesto','sector','fuente','cubo','salud','relacion','ajuste','ck1','ck2','ck3','ck4','ticket','semana','notas','estado'];
 
 let accs=[],segs=[],pcs=[],editAccId=null,editSegId=null,pcR=0,activeTab='dashboard';
 let wk={w1:{t:0,c:0,q:0,z:0,m:0},w2:{t:0,c:0,q:0,z:0,m:0},w3:{t:0,c:0,q:0,z:0,m:0},w4:{t:0,c:0,q:0,z:0,m:0},w5:{t:0,c:0,q:0,z:0,m:0},w6:{t:0,c:0,q:0,z:0,m:0},w7:{t:0,c:0,q:0,z:0,m:0},w8:{t:0,c:0,q:0,z:0,m:0}};
@@ -605,31 +662,34 @@ function renderSeg(){
   const saludLabel={'saludable':'<span class="badge bv">Saludable</span>','estable':'<span class="badge by">Estable</span>','contraido':'<span class="badge br2">Contraído</span>'}
   const relLabel={'caliente':'Caliente','viva':'Viva','dormida':'Dormida','nueva':'Nueva','cotizo':'Cotizó'}
   const ajusteLabel={'alto':'<span class="badge bv">Alto</span>','medio':'<span class="badge by">Medio</span>','bajo':'<span class="badge br2">Bajo</span>'}
+  const fuenteLabel={'recurrente':'Recurrente','referido':'Referido','marqui':'★ Marqui','linkedin':'LinkedIn','inbound':'Inbound','evento':'Evento','base_propia':'Base propia','otro':'Otro'}
   document.getElementById('seg-body').innerHTML=list.map(s=>`<tr>
-    <td><strong>${s.empresa}</strong></td>
-    <td style="font-size:11px">${s.decisor||'—'}</td>
+    <td><strong>${s.empresa}</strong>${s.ticket?`<br><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ink3)">${fmx(s.ticket)}</span>`:''}</td>
+    <td><strong style="font-size:12px">${s.contacto||s.decisor||'—'}</strong></td>
+    <td style="font-size:11px;color:var(--ink2)">${s.puesto||'—'}</td>
     <td><span class="badge ${cC(s.cubo)}">${s.cubo}</span></td>
     <td style="font-size:11px">${s.sector||'—'}</td>
+    <td>${s.fuente?`<span class="src">${fuenteLabel[s.fuente]||s.fuente}</span>`:'<span style="color:var(--ink3)">—</span>'}</td>
     <td>${saludLabel[s.salud]||'<span style="color:var(--ink3)">—</span>'}</td>
     <td style="font-size:11px">${relLabel[s.relacion]||'—'}</td>
     <td>${ajusteLabel[s.ajuste]||'<span style="color:var(--ink3)">—</span>'}</td>
     <td>${s.estado==='en_pipeline'?`<span class="badge bv">En pipeline</span>`:`<span class="badge e1">Sin tocar</span>`}</td>
     <td style="font-size:11px;max-width:140px;color:var(--ink2)">${s.notas||'—'}</td>
     <td style="display:flex;gap:4px;padding-top:9px">
-      <button class="bi" onclick="editSeg(${s.id})"><i class="ti ti-edit"></i></button>
+      <button class="bi" onclick="editSeg(${s.id})" title="Editar"><i class="ti ti-edit"></i></button>
       <button class="bi gr" onclick="promoverSeg(${s.id})" title="Mover al pipeline"><i class="ti ti-arrow-right"></i></button>
     </td>
-  </tr>`).join('')||`<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--ink3)">Sin empresas segmentadas aún. Agrega empresas antes de iniciar el contacto.</td></tr>`;
+  </tr>`).join('')||`<tr><td colspan="12" style="text-align:center;padding:2rem;color:var(--ink3)">Sin empresas segmentadas. Agrega empresas antes de iniciar el contacto.</td></tr>`;
 }
 
 function openSegModal(id){
   editSegId=id||null;document.getElementById('seg-modal-title').textContent=id?'Editar empresa':'Agregar empresa a segmentar';
   if(id){const s=segs.find(x=>x.id===id);
-    ['empresa','decisor','sector','cubo','salud','relacion','ajuste','ticket','semana','notas'].forEach(f=>document.getElementById('sg-'+f).value=s[f]||'');
+    ['empresa','contacto','puesto','sector','cubo','salud','relacion','ajuste','ticket','semana','notas','fuente'].forEach(f=>document.getElementById('sg-'+f).value=s[f]||'');
     ['ck1','ck2','ck3','ck4'].forEach(f=>document.getElementById('sg-'+f).checked=B(s[f]));
   }else{
-    ['empresa','decisor','ticket','notas'].forEach(f=>document.getElementById('sg-'+f).value='');
-    ['sector','cubo','salud','relacion','ajuste'].forEach(f=>document.getElementById('sg-'+f).value='');
+    ['empresa','contacto','puesto','ticket','notas'].forEach(f=>document.getElementById('sg-'+f).value='');
+    ['sector','cubo','salud','relacion','ajuste','fuente'].forEach(f=>document.getElementById('sg-'+f).value='');
     document.getElementById('sg-cubo').value='Nuevos';document.getElementById('sg-semana').value='sem2';
     ['ck1','ck2','ck3','ck4'].forEach(f=>document.getElementById('sg-'+f).checked=false);
   }
@@ -642,7 +702,7 @@ async function saveSeg(){
   const empresa=document.getElementById('sg-empresa').value.trim();
   if(!empresa){toast('La empresa es obligatoria',true);return}
   const btn=document.getElementById('btn-seg-save');btn.disabled=true;btn.textContent='Guardando…';
-  const s={id:editSegId||Date.now(),empresa,decisor:document.getElementById('sg-decisor').value,sector:document.getElementById('sg-sector').value,cubo:document.getElementById('sg-cubo').value,salud:document.getElementById('sg-salud').value,relacion:document.getElementById('sg-relacion').value,ajuste:document.getElementById('sg-ajuste').value,ck1:document.getElementById('sg-ck1').checked?'true':'false',ck2:document.getElementById('sg-ck2').checked?'true':'false',ck3:document.getElementById('sg-ck3').checked?'true':'false',ck4:document.getElementById('sg-ck4').checked?'true':'false',ticket:parseInt(document.getElementById('sg-ticket').value)||0,semana:document.getElementById('sg-semana').value,notas:document.getElementById('sg-notas').value,estado:editSegId?segs.find(x=>x.id===editSegId)?.estado||'sin_tocar':'sin_tocar'};
+  const s={id:editSegId||Date.now(),empresa,contacto:document.getElementById('sg-contacto').value,puesto:document.getElementById('sg-puesto').value,sector:document.getElementById('sg-sector').value,fuente:document.getElementById('sg-fuente').value,cubo:document.getElementById('sg-cubo').value,salud:document.getElementById('sg-salud').value,relacion:document.getElementById('sg-relacion').value,ajuste:document.getElementById('sg-ajuste').value,ck1:document.getElementById('sg-ck1').checked?'true':'false',ck2:document.getElementById('sg-ck2').checked?'true':'false',ck3:document.getElementById('sg-ck3').checked?'true':'false',ck4:document.getElementById('sg-ck4').checked?'true':'false',ticket:parseInt(document.getElementById('sg-ticket').value)||0,semana:document.getElementById('sg-semana').value,notas:document.getElementById('sg-notas').value,estado:editSegId?segs.find(x=>x.id===editSegId)?.estado||'sin_tocar':'sin_tocar'};
   if(editSegId)segs=segs.map(x=>x.id===editSegId?s:x);else segs.push(s);
   closeSegModal();renderCuboCards();renderSeg();await saveSegData();
   btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar';
@@ -651,17 +711,26 @@ async function saveSeg(){
 async function promoverSeg(id){
   const s=segs.find(x=>x.id===id);if(!s)return;
   s.estado='en_pipeline';
-  // Pre-populate pipeline modal
   openAccModal();
   document.getElementById('a-empresa').value=s.empresa;
-  document.getElementById('a-nombre').value=s.decisor||'';
+  document.getElementById('a-nombre').value=s.contacto||s.decisor||'';
   document.getElementById('a-cubo').value=s.cubo;
   document.getElementById('a-sector').value=s.sector||'';
   document.getElementById('a-ticket').value=s.ticket||'';
-  s.estado='en_pipeline';
   segs=segs.map(x=>x.id===id?s:x);
   renderSeg();await saveSegData();
   toast('Empresa promovida al pipeline — completa los datos de seguimiento');
+}
+
+async function regresarASegmentacion(accId){
+  if(!confirm('¿Regresar esta cuenta a Segmentación? Quedará en E1 y dejará de mostrarse en etapas activas.'))return;
+  const a=accs.find(x=>x.id===accId);if(!a)return;
+  a.etapa='E1';a.fecha=new Date().toISOString().split('T')[0];
+  const seg=segs.find(s=>s.empresa.toLowerCase()===a.empresa.toLowerCase());
+  if(seg){seg.estado='sin_tocar';await saveSegData();renderSeg()}
+  else{segs.push({id:Date.now(),empresa:a.empresa,contacto:a.nombre,puesto:'',sector:a.sector||'',fuente:'',cubo:a.cubo,salud:'',relacion:'',ajuste:'',ck1:'false',ck2:'false',ck3:'false',ck4:'false',ticket:a.ticket||0,semana:'sem3',notas:'Regresada desde pipeline',estado:'sin_tocar'});await saveSegData();renderSeg()}
+  renderPipeline();renderDash();await saveAccs();
+  toast('Cuenta regresada a Segmentación');
 }
 
 // ══ PIPELINE ══
@@ -671,8 +740,15 @@ function renderPipeline(){
   let list=[...accs];
   if(fC)list=list.filter(a=>a.cubo===fC);if(fE)list=list.filter(a=>a.etapa===fE);if(fR)list=list.filter(a=>a.resp===fR);if(fT)list=list.filter(a=>a.tipo===fT);if(fA)list=list.filter(a=>getAl(a));
   list.sort((a,b)=>ord.indexOf(a.etapa)-ord.indexOf(b.etapa));
+  const canalIcon={'email':'📧','llamada':'📞','whatsapp':'💬','linkedin':'💼','presencial':'🤝','zoom':'🎥'};
+  const tCell=(a,n)=>{const f=a[`t${n}f`],c=a[`t${n}c`];
+    if(f)return`<td style="text-align:center"><div class="td done" title="${f}${c?' · '+(canalIcon[c]||c):''}" onclick="openTouchModal(${a.id},${n})">${canalIcon[c]||'✓'}</div><div style="font-size:9px;color:var(--g);margin-top:2px">${f.slice(5)}</div></td>`;
+    const isNext=n===1||a[`t${n-1}f`];
+    return`<td style="text-align:center"><div class="td ${isNext?'next':''}" title="Registrar toque ${n}" onclick="openTouchModal(${a.id},${n})">${n}</div></td>`;
+  };
   document.getElementById('pipeline-body').innerHTML=list.map(a=>{
     const al=getAl(a),d=a.fecha?ds(a.fecha):null,dc=d>7?'var(--r)':d>4?'var(--y)':'inherit';
+    const touchCount=[a.t1f,a.t2f,a.t3f,a.t4f].filter(Boolean).length;
     return`<tr>
       <td><strong>${a.nombre}</strong><br><span style="color:var(--ink3);font-size:11px">${a.empresa}${a.sector?' · '+a.sector:''}${B(a.marq)?'<span style="color:var(--p);margin-left:4px" title="Intro Marqui">★</span>':''}</span></td>
       <td><span class="badge ${cC(a.cubo)}">${a.cubo}</span></td>
@@ -681,14 +757,19 @@ function renderPipeline(){
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--p)">${a.tickSys?fmx(a.tickSys)+'/año':'—'}</td>
       <td>${a.tipo}</td>
       <td style="color:${dc};font-family:'DM Mono',monospace">${d!==null?d+'d':'—'}<br><span style="font-size:10px;color:var(--ink3)">${a.fecha||''}</span></td>
+      ${tCell(a,1)}${tCell(a,2)}${tCell(a,3)}${tCell(a,4)}
       <td style="text-align:center">${a.cotF||['E5','E6','E7'].includes(a.etapa)?`<i class="ti ti-${B(a.cotSol)?'circle-check':'circle-x'}" style="color:${B(a.cotSol)?'var(--g)':'var(--r)'};font-size:14px"></i>`:'<span style="color:var(--ink3)">—</span>'}</td>
       <td style="text-align:center">${a.cotF?`<i class="ti ti-${B(a.slaOk)?'circle-check':'circle-x'}" style="color:${B(a.slaOk)?'var(--g)':'var(--r)'};font-size:14px"></i>`:'<span style="color:var(--ink3)">—</span>'}</td>
       <td>${a.sysAv?`<span class="badge ${syC(a.sysAv)}">${syL(a.sysAv)}</span>`:'<span style="color:var(--ink3);font-size:11px">—</span>'}</td>
       <td>${a.resp}</td>
       <td style="font-size:11px">${al?`<span style="color:${al.l==='red'?'var(--r)':'var(--y)'}"><i class="ti ti-alert-triangle"></i> ${al.m}</span>`:'<span style="color:var(--ink3)">—</span>'}</td>
-      <td style="display:flex;gap:4px;padding-top:9px"><button class="bi" onclick="editAcc(${a.id})"><i class="ti ti-edit"></i></button><button class="bi gr" onclick="advStage(${a.id})" title="Avanzar etapa"><i class="ti ti-arrow-right"></i></button></td>
+      <td style="display:flex;gap:4px;padding-top:9px">
+        <button class="bi" onclick="editAcc(${a.id})" title="Editar"><i class="ti ti-edit"></i></button>
+        <button class="bi gr" onclick="advStage(${a.id})" title="Avanzar etapa"><i class="ti ti-arrow-right"></i></button>
+        <button class="bi sendback" onclick="regresarASegmentacion(${a.id})" title="Regresar a Segmentación"><i class="ti ti-arrow-back-up"></i></button>
+      </td>
     </tr>`;
-  }).join('')||`<tr><td colspan="13" style="text-align:center;padding:2rem;color:var(--ink3)">Sin cuentas con esos filtros</td></tr>`;
+  }).join('')||`<tr><td colspan="17" style="text-align:center;padding:2rem;color:var(--ink3)">Sin cuentas con esos filtros</td></tr>`;
 }
 
 async function advStage(id){
@@ -703,7 +784,36 @@ async function advStage(id){
   renderPipeline();renderDash();await saveAccs();
 }
 
-// MODAL CUENTA
+// ══ TOUCH MODAL ══
+function openTouchModal(accId,num){
+  document.getElementById('touch-acc-id').value=accId;
+  document.getElementById('touch-num').value=num;
+  const a=accs.find(x=>x.id===accId);
+  document.getElementById('touch-title').textContent=`${a?a.empresa:''} — Toque ${num} ${['','(Primer correo)','(2° toque)','(3° toque)','(4° toque)'][num]||''}`;
+  const existF=a?a[`t${num}f`]:'',existC=a?a[`t${num}c`]:'email';
+  document.getElementById('touch-fecha').value=existF||new Date().toISOString().split('T')[0];
+  document.getElementById('touch-canal').value=existC||'email';
+  document.getElementById('touch-nota').value='';
+  document.getElementById('mo-touch').classList.add('open');
+}
+function closeTouchModal(){document.getElementById('mo-touch').classList.remove('open')}
+
+async function saveTouch(){
+  const id=parseInt(document.getElementById('touch-acc-id').value);
+  const num=parseInt(document.getElementById('touch-num').value);
+  const fecha=document.getElementById('touch-fecha').value;
+  const canal=document.getElementById('touch-canal').value;
+  const a=accs.find(x=>x.id===id);if(!a)return;
+  a[`t${num}f`]=fecha;
+  a[`t${num}c`]=canal;
+  // Update last contact date
+  a.fecha=fecha;
+  // Auto-advance to E2 if still E1
+  if(a.etapa==='E1'&&num===1){a.etapa='E2'}
+  closeTouchModal();renderPipeline();renderDash();
+  await saveAccs();
+  toast(`✓ Toque ${num} registrado — ${canal} · ${fecha}`);
+}
 function openAccModal(id){
   editAccId=id||null;document.getElementById('acc-title').textContent=id?'Editar cuenta':'Agregar cuenta';
   if(id){const a=accs.find(x=>x.id===id);
@@ -726,7 +836,9 @@ async function saveAcc(){
   const n=document.getElementById('a-nombre').value.trim(),e=document.getElementById('a-empresa').value.trim();
   if(!n||!e){toast('Nombre y empresa son obligatorios',true);return}
   const btn=document.getElementById('btn-acc-save');btn.disabled=true;btn.textContent='Guardando…';
-  const a={id:editAccId||Date.now(),nombre:n,empresa:e,cubo:document.getElementById('a-cubo').value,etapa:document.getElementById('a-etapa').value,tipo:document.getElementById('a-tipo').value,ticket:parseInt(document.getElementById('a-ticket').value)||0,tickSys:parseInt(document.getElementById('a-ticksys').value)||0,resp:document.getElementById('a-resp').value,fecha:document.getElementById('a-fecha').value,accion:document.getElementById('a-accion').value,cotF:document.getElementById('a-cotf').value||null,sector:document.getElementById('a-sector').value,notas:document.getElementById('a-notas').value,slaOk:document.getElementById('a-slaok').checked?'true':'false',cotSol:document.getElementById('a-cotsol').checked?'true':'false',sysAv:document.getElementById('a-sysav').value,marq:document.getElementById('a-marq').checked?'true':'false'};
+  const existing=editAccId?accs.find(x=>x.id===editAccId):null;
+  const a={id:editAccId||Date.now(),nombre:n,empresa:e,cubo:document.getElementById('a-cubo').value,etapa:document.getElementById('a-etapa').value,tipo:document.getElementById('a-tipo').value,ticket:parseInt(document.getElementById('a-ticket').value)||0,tickSys:parseInt(document.getElementById('a-ticksys').value)||0,resp:document.getElementById('a-resp').value,fecha:document.getElementById('a-fecha').value,accion:document.getElementById('a-accion').value,cotF:document.getElementById('a-cotf').value||null,sector:document.getElementById('a-sector').value,notas:document.getElementById('a-notas').value,slaOk:document.getElementById('a-slaok').checked?'true':'false',cotSol:document.getElementById('a-cotsol').checked?'true':'false',sysAv:document.getElementById('a-sysav').value,marq:document.getElementById('a-marq').checked?'true':'false',
+    t1f:existing?.t1f||'',t1c:existing?.t1c||'',t2f:existing?.t2f||'',t2c:existing?.t2c||'',t3f:existing?.t3f||'',t3c:existing?.t3c||'',t4f:existing?.t4f||'',t4c:existing?.t4c||''};
   if(editAccId)accs=accs.map(x=>x.id===editAccId?a:x);else accs.push(a);
   // Sync seg estado
   const seg=segs.find(s=>s.empresa.toLowerCase()===e.toLowerCase());
@@ -886,7 +998,7 @@ function sw(name,btn){
 }
 
 // MODAL CLOSE ON BACKDROP
-['mo-seg','mo-acc','mo-pc'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{if(e.target.id===id)document.getElementById(id).classList.remove('open')}));
+['mo-seg','mo-acc','mo-pc','mo-touch'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{if(e.target.id===id)document.getElementById(id).classList.remove('open')}));
 document.getElementById('wksel').addEventListener('change',loadWk);
 
 // ALSO UPDATE APPS SCRIPT NOTE
